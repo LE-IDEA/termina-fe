@@ -1,16 +1,41 @@
 "use client";
 import Image from "next/image";
 import { FC, useState } from "react";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+import app from "../../lib/firebase";
 import { Button } from "@/components/ui/button";
 import heroImg from "../../../public/shield-icon.png";
 import { Instrument_Serif, Geologica } from "next/font/google";
 import { Mail } from "lucide-react";
 import { Input } from "../ui/input";
+import toast, { Toaster } from "react-hot-toast";
+
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
-const geologica = Geologica({ weight: "400", subsets: ["latin"] });
+const geologica = Geologica({
+  weight: ["300", "400", "500", "600"],
+  subsets: ["latin"],
+});
 
 const Hero: FC = () => {
   const [email, setEmail] = useState("");
+  const [joined, setJoined] = useState(false);
+
+  const db = getFirestore(app);
+
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(db, "waitlist"), {
+        email,
+        timestamp: new Date(),
+      });
+      setEmail("");
+      toast.success( "Successfully joined waitlist!");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error joining waitlist");
+    }
+  };
   return (
     <>
       <section className={`container mx-auto mt-0 `}>
@@ -23,14 +48,19 @@ const Hero: FC = () => {
               <br />
             </h1>
 
-            <p className={`text-base lg:mb-8 mb-6 max-w-2xl font-light text-gray-700 ${geologica.className}`}>
+            <p
+              className={`text-base leading-relaxed/2 lg:mb-8 mb-6 max-w-2xl font-light text-gray-700 ${geologica.className}`}
+            >
               Trade memecoins on Solana effortlessly. Swap meme tokens for SPL
               tokens in a few clicks—no hassle, no telegram trade bot, just
               safe, secure, and intuitive.
             </p>
 
             <div className="mb-4 space-y-4 sm:flex sm:space-x-4 sm:space-y-0">
-              <form className="flex space-x-3 items-center w-full max-w-md ">
+              <form
+                className="flex space-x-3 items-center w-full max-w-md "
+                onSubmit={handleSubmit}
+              >
                 <div className="relative flex-1 gap-2 p-1 rounded-xl border bg-background">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -61,6 +91,7 @@ const Hero: FC = () => {
             />
           </div>
         </div>
+        <Toaster/>
       </section>
     </>
   );

@@ -4,7 +4,7 @@ import { Instrument_Serif, Geologica } from "next/font/google";
 import Image from "next/image";
 
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
-const geologica = Geologica({ weight: "400", subsets: ["latin"] });
+const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 
 const WhyTermina: FC = () => {
   return (
@@ -16,7 +16,7 @@ const WhyTermina: FC = () => {
           </h2>
 
           <div className={`grid gap-6 lg:grid-cols-7 mt-12 px-4 md:px-0 ${geologica.className}`}>
-            <div className="w-full border lg:col-span-3 rounded-3xl p-6">
+            <div className="w-full border lg:col-span-3 rounded-3xl p-6 hover:bg-zinc-950 *:hover:text-white">
               <div className="mb-4">
                 <Image src="/Logo-small.png" width={100} height={100} alt="" />
               </div>
@@ -30,7 +30,7 @@ const WhyTermina: FC = () => {
               </p>
             </div>
 
-            <div className="w-full border lg:col-span-2 rounded-3xl p-6">
+            <div className="w-full border lg:col-span-2 rounded-3xl p-6 ">
               <div className="">
                 <Image src="/dollar-icon.png" width={40} height={40} alt="" />
               </div>
