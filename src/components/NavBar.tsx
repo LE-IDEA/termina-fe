@@ -19,26 +19,26 @@ export default function NavBar({ isHome = true }: NavBarProps) {
 
         <div className="flex items-center space-x-12">
           <Link
-            href="/"
+            href="https://x.com/use_Termina/status/1883078030907908389"
             className="hidden md:block font-medium cursor-pointer hover:text-blue-600"
           >
             About
           </Link>
 
           <Link
-            href="/blog"
+            href="#"
             className="hidden md:block font-medium cursor-pointer hover:text-blue-600"
           >
             Features
           </Link>
 
           <Link
-            href="/blog"
+            href="#"
             className="hidden md:block font-medium cursor-pointer hover:text-blue-600"
           >
             White Paper
           </Link>
-
+{/* 
           <Link
             href="https://github.com/leeftk/leeftk/blob/main/README.md"
             target="blank"
@@ -47,7 +47,7 @@ export default function NavBar({ isHome = true }: NavBarProps) {
             <Button className="bg-blue-600 rounded-xl p-6 hover:bg-blue-800 hover:text-white">
               Create Wallet
             </Button>
-          </Link>
+          </Link> */}
         </div>
 
         {/* <MobileNav /> */}
@@ -63,7 +63,7 @@ export default function NavBar({ isHome = true }: NavBarProps) {
       {isOpen && (
         <div className="absolute w-11/12 mx-auto top-[80px] left-0 right-0 bg-white border-b rounded-b-[36px] shadow-md p-4 space-y-4">
           <Link
-            href="/"
+            href="https://x.com/use_Termina/status/1883078030907908389"
             className="block py-2 font-medium hover:text-blue-600"
             onClick={() => setIsOpen(false)}
           >
@@ -71,7 +71,7 @@ export default function NavBar({ isHome = true }: NavBarProps) {
           </Link>
           
           <Link
-            href="/blog"
+            href="#"
             className="block py-2 font-medium hover:text-blue-600"
             onClick={() => setIsOpen(false)}
           >
@@ -79,22 +79,11 @@ export default function NavBar({ isHome = true }: NavBarProps) {
           </Link>
 
           <Link
-            href="/blog"
+            href="#"
             className="block py-2 font-medium hover:text-blue-600"
             onClick={() => setIsOpen(false)}
           >
             White Paper
-          </Link>
-
-          <Link
-            href="https://github.com/leeftk/leeftk/blob/main/README.md"
-            target="blank"
-            className="block"
-            onClick={() => setIsOpen(false)}
-          >
-            <Button className="w-fit bg-blue-600 rounded-xl p-6 hover:bg-blue-800 hover:text-white">
-              Create Wallet
-            </Button>
           </Link>
         </div>
       )}
