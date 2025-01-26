@@ -16,12 +16,10 @@ const GetFamiliar: FC = () => {
 
           <div>
             <h2 className={`${instrumentSerif.className} text-5xl mb-8`}>
-              Get familiar Termina
+            Join the fun! 
             </h2>
             <p className={`${geologica.className} text-xl text-gray-600`}>
-              Watch our quick tutorials and get familiar on how to degen with
-              termina in a couple minutes.
-            </p>
+            Stay ahead of the curve and get instant access to our hottest updates the moment they land. Don't miss out on the excitement – join our waitlist now!</p>
             <Button className={`${geologica.className} bg-blue-500 text-lg rounded-xl mt-8 hover:bg-blue-800 hover:text-white`} size="lg">
               Learn More
             </Button>
