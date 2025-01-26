@@ -3,6 +3,7 @@ import Image from "next/image";
 import logo from "../../public/Logo-white.png";
 import { Instrument_Serif, Geologica } from "next/font/google";
 import { Button } from "./ui/button";
+import WaitlistForm from "./landing/WaitlistForm";
 
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 
@@ -69,12 +70,13 @@ export default function Footer() {
             </p>
 
             <div className="space-y-2">
-              <Button
+              {/* <Button
                   type="submit"
                   className="bg-blue-500 text-white rounded-xl w-full text-lg h-10 py-2 font-medium px-6"
                 >
                   Join Waitlist
-                </Button>
+                </Button> */}
+                <WaitlistForm initialFormState="join"/>
             </div>
           </div>
         </div>

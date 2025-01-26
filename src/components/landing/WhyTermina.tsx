@@ -2,21 +2,25 @@
 import { FC, } from "react";
 import { Instrument_Serif, Geologica } from "next/font/google";
 import Image from "next/image";
-
+import Web3Icons from "../../../public/Web3icons.png"
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 
 const WhyTermina: FC = () => {
   return (
     <>
-      <section className={`container mx-auto mt-28 mb-8 `}>
+      <section className={`container mx-auto mt-28 md:px-8 mb-8 `}>
         <div className="mx-auto">
           <h2 className={`${instrumentSerif.className} text-center text-4xl`}>
             Why Termina?
           </h2>
 
           <div className={`grid gap-6 lg:grid-cols-7 mt-12 px-4 md:px-0 ${geologica.className}`}>
-            <div className="w-full border lg:col-span-3 rounded-3xl p-6 hover:bg-zinc-950 *:hover:text-white">
+            <div className="relative w-full lg:col-span-3 group">
+            <div className="absolute flex-none -left-[20px] -top-[40px] w-[200px] h-auto hidden group-hover:block  -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-in-out">
+              <Image src={Web3Icons} alt="web3-icons" />
+            </div>
+            <div className="w-full border rounded-3xl p-6 transition-all duration-400 ease-in-out group-hover:bg-zinc-950 group-hover:border-zinc-800 group-hover:shadow-lg *:group-hover:text-white">
               <div className="mb-4">
                 <Image src="/Logo-small.png" width={100} height={100} alt="" />
               </div>
@@ -28,6 +32,7 @@ const WhyTermina: FC = () => {
                 assets - all in one app. Trade memecoins for SPL tokens easily
                 with simple token swaps.
               </p>
+            </div>
             </div>
 
             <div className="w-full border lg:col-span-2 rounded-3xl p-6 ">

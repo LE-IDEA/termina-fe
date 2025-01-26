@@ -8,10 +8,12 @@ export default function Home() {
   return (
     <>
       <NavBar />
-      <Hero />
-      <WhyTermina/>
-      <GetFamiliar/>
-      <Footer/>
+      <div className="px-6">
+        <Hero />
+        <WhyTermina />
+        <GetFamiliar />
+      </div>
+      <Footer />
     </>
   );
 }
