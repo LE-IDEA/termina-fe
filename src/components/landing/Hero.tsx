@@ -6,7 +6,7 @@ import app from "../../lib/firebase";
 import { Button } from "@/components/ui/button";
 import heroImg from "../../../public/shield-icon.png";
 import { Instrument_Serif, Geologica } from "next/font/google";
-import { Mail } from "lucide-react";
+import { Mail, Sparkles } from "lucide-react";
 import { Input } from "../ui/input";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -18,22 +18,23 @@ const geologica = Geologica({
 
 const Hero: FC = () => {
   const [email, setEmail] = useState("");
-  const [joined, setJoined] = useState(false);
+  const [formState, setFormState] = useState('waitlist');
 
   const db = getFirestore(app);
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, "waitlist"), {
-        email,
-        timestamp: new Date(),
-      });
-      setEmail("");
+      // await addDoc(collection(db, "waitlist"), {
+      //   email,
+      //   timestamp: new Date(),
+      // });
+      // setEmail("");
       toast.success( "Successfully joined waitlist!");
+      setFormState("wishlist")
     } catch (error) {
       console.error("Error:", error);
-      alert("Error joining waitlist");
+      toast.error("Error joining waitlist");
     }
   };
   return (
@@ -57,6 +58,7 @@ const Hero: FC = () => {
             </p>
 
             <div className="mb-4 space-y-4 sm:flex sm:space-x-4 sm:space-y-0">
+            {formState === 'waitlist' && (
               <form
                 className="flex space-x-3 items-center w-full max-w-md "
                 onSubmit={handleSubmit}
@@ -78,7 +80,33 @@ const Hero: FC = () => {
                 >
                   Join Waitlist
                 </Button>
+              </form>)}
+              
+              {formState === 'wishlist' && (
+              <form
+                className="flex space-x-3 items-center w-full max-w-md "
+                onSubmit={handleSubmit}
+              >
+                <div className="relative flex-1 gap-2 p-1 rounded-xl border bg-background">
+                  <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    placeholder="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 pl-9"
+                    required
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="bg-blue-500 text-white rounded-xl text-lg h-10 py-2 font-medium px-6"
+                >
+                 Add Wishlist
+                </Button>
               </form>
+              )}
+
             </div>
           </div>
           <div className="md:col-span-5 lg:mt-0 lg:flex">

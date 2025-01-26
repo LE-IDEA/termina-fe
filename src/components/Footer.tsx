@@ -24,7 +24,7 @@ export default function Footer() {
                 <ul className="grid text-gray-100 gap-4 min-[500px]:gap-6 min-[500px]:text-left">
                   <li>
                     <Link
-                      href="#"
+                      href="https://x.com/use_Termina/status/1883078030907908389"
                       target="blank"
                       className="hover:text-white transition-colors"
                     >
@@ -49,7 +49,7 @@ export default function Footer() {
                   </li>
                   <li>
                     <Link
-                      href="#"
+                      href="https://x.com/use_Termina"
                       target="blank"
                       className="hover:text-white transition-colors"
                     >
