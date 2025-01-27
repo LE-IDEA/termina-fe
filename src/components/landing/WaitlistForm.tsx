@@ -28,7 +28,6 @@ export default function WaitlistForm({
         email,
         timestamp: new Date(),
       });
-      setEmail("");
       toast.success("Successfully joined waitlist!");
       setFormState("wishlist");
     } catch (error) {
@@ -40,6 +39,11 @@ export default function WaitlistForm({
   const handleWishList = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     try {
+      await addDoc(collection(db, "wishlist"), {
+        email,
+        wishlist,
+        timestamp: new Date(),
+      });
       toast.success("Successfully added to wishlist!");
       setFormState("done");
     } catch (error) {
@@ -47,8 +51,6 @@ export default function WaitlistForm({
       toast.error("Error joining waitlist");
     }
   };
-
-
 
   return (
     <div className="mb-4 space-y-4 sm:flex sm:space-x-4 sm:space-y-0">
@@ -114,7 +116,7 @@ export default function WaitlistForm({
             <Button
               type="submit"
               className="bg-blue-500 text-white rounded-xl w-full text-lg h-10 py-2 font-medium px-6"
-              onClick={()=>{
+              onClick={() => {
                 setFormState("waitlist");
               }}
             >
