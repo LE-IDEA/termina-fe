@@ -135,7 +135,7 @@ const Hero: FC = () => {
                 </Button>
               )}
             </div> */}
-            <WaitlistForm/>
+            <WaitlistForm initialFormState="wishlist"/>
           </div>
           <div className="md:col-span-5 lg:mt-0 lg:flex">
             <Image

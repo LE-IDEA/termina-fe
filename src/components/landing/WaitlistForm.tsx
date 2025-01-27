@@ -88,10 +88,9 @@ export default function WaitlistForm({
               <Input
                 type="text"
                 placeholder="wish features"
-                value={email}
+                value={wishlist}
                 onChange={(e) => setWishList(e.target.value)}
                 className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 pl-9"
-                required
               />
             </div>
             <Button
