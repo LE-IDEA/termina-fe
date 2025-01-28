@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ReownProvider } from '../providers/reownProvider';
+
+
+
 export const metadata: Metadata = {
   title: "Termina",
   description: "Gas abstraction with improved UI for degening experience.",
 };
+
 
 export default function RootLayout({
   children,
@@ -15,7 +20,7 @@ export default function RootLayout({
       <body
         className={` antialiased`}
       >
-        {children}
+          <ReownProvider>{children}</ReownProvider>
       </body>
     </html>
   );

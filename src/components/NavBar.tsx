@@ -45,16 +45,9 @@ export default function NavBar({ isHome = true }: NavBarProps) {
           >
             White Paper
           </Link>
-          {/* 
-          <Link
-            href="https://github.com/leeftk/leeftk/blob/main/README.md"
-            target="blank"
-            className="hidden md:block"
-          >
-            <Button className="bg-blue-600 rounded-xl p-6 hover:bg-blue-800 hover:text-white">
-              Create Wallet
-            </Button>
-          </Link> */}
+        <div>
+        <appkit-button />
+        </div>
         </div>
 
         {/* <MobileNav /> */}
