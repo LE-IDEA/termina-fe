@@ -27,8 +27,12 @@ export function ReownProvider({ children }: { children: React.ReactNode }) {
       metadata: metadata,
       projectId,
       features: {
-        analytics: true
-      }
+        analytics: true,
+        email: true,
+        socials: ['google', 'x', 'apple'],
+        emailShowWallets: true,
+        onramp: false
+      },
     });
   }, []); 
 
