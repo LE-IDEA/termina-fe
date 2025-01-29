@@ -46,7 +46,6 @@ export default function NavBar({ isHome = true }: NavBarProps) {
             White Paper
           </Link>
         <div>
-        <appkit-button />
         </div>
         </div>
 
