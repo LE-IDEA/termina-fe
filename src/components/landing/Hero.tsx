@@ -30,7 +30,7 @@ export default function CryptoDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">$12,345.67</div>
-            <div className="mt-4 flex items-center gap-4">
+            <div className="mt-4 w-3/4 flex flex-col sm:flex-row gap-4">
               <OnrampModal /> <OfframpModal />
             </div>
           </CardContent>
