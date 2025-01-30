@@ -25,29 +25,29 @@ export default function NavBar({ isHome = true }: NavBarProps) {
         <Image src="/Termina-logo.png" alt="" width={120} height={100} />
 
         <div className="flex items-center space-x-12">
-          <Link
+          {/* <Link
             href="https://x.com/use_Termina/status/1883078030907908389"
             className="hidden md:block font-medium cursor-pointer hover:text-blue-600"
           >
             About
-          </Link>
+          </Link> */}
 
-          <Link
+          {/* <Link
             href="#"
             className="hidden md:block font-medium cursor-pointer hover:text-blue-600"
           >
             Features
-          </Link>
+          </Link> */}
 
-          <Link
+          {/* <Link
             href="#"
             className="hidden md:block font-medium cursor-pointer hover:text-blue-600"
           >
             White Paper
-          </Link>
-        <div>
-        <appkit-button />
-        </div>
+          </Link> */}
+          <div>
+            <appkit-button />
+          </div>
         </div>
 
         {/* <MobileNav /> */}
