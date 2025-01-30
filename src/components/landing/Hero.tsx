@@ -20,7 +20,7 @@ export default function CryptoDashboard() {
   return (
     <div className="w-11/12 md:max-w-6xl mx-auto bg-background my-4 p-4 md:p-6 md:my-6 lg:my-8">
       <div className="">
-        <Card className="w-1/2">
+        <Card className="w-full md:w-1/2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Wallet className="h-5 w-5" />
