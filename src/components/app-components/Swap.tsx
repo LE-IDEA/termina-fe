@@ -10,110 +10,101 @@ import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { ArrowUpDown, Settings2Icon } from "lucide-react";
 import { Input } from "../ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import useTokens from "@/hooks/useTokens";
 import { debounce } from "@/utils";
-import Image from "next/image";
 import TokenSearchModal from "./TokenModal";
+import { formatBalance } from "@/utils/formattedbalances";
+import { useTokenBalances } from "@/hooks/useTokenBalances";
+import toast from "react-hot-toast";
 
 export default function Swap() {
   const { connection } = useAppKitConnection();
   const { walletProvider } = useAppKitProvider<Provider>("solana");
-  const { tokens, loading, error } = useTokens();
-  const [fromAsset, setFromAsset] = useState(tokens[0]);
-  const [toAsset, setToAsset] = useState(tokens[1]);
-  const [fromAmount, setFromAmount] = useState(0);
-  const [toAmount, setToAmount] = useState(0);
-  const [quoteResponse, setQuoteResponse] = useState(null);
+  const { tokens } = useTokens();
+  const { balances, balancesLoading } = useTokenBalances();
 
-  const assets = [
-    {
-      name: "SOL",
-      mint: "So11111111111111111111111111111111111111112",
-      decimals: 9,
-    },
-    {
-      name: "USDC",
-      mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-      decimals: 6,
-    },
-    {
-      name: "BONK",
-      mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
-      decimals: 5,
-    },
-    {
-      name: "WIF",
-      mint: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
-      decimals: 6,
-    },
-  ];
+  // Initialize with null and set after tokens are loaded
+  const [fromAsset, setFromAsset] = useState(null);
+  const [toAsset, setToAsset] = useState(null);
+  const [fromAmount, setFromAmount] = useState("");
+  const [toAmount, setToAmount] = useState("");
+  const [quoteResponse, setQuoteResponse] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [swapping, setSwapping] = useState(false);
 
   useEffect(() => {
-    if (tokens.length > 0) {
+    if (tokens && tokens.length >= 2 && !isInitialized) {
       setFromAsset(tokens[0]);
       setToAsset(tokens[1]);
+      setIsInitialized(true);
     }
-  }, [tokens]);
+  }, [tokens, isInitialized]);
 
-  const handleFromAssetChange = (value: string) => {
-    const selectedAsset = tokens.find((token) => token.symbol === value);
-    if (selectedAsset) {
-      setFromAsset(selectedAsset);
+  const handleFromAssetChange = (token) => {
+    if (token) {
+      setFromAsset(token);
+      setFromAmount("");
+      setToAmount("");
     }
   };
 
-  const handleToAssetChange = (value: string) => {
-    const selectedAsset = tokens.find((token) => token.symbol === value);
-    if (selectedAsset) {
-      setToAsset(selectedAsset);
+  const handleToAssetChange = (token) => {
+    if (token) {
+      setToAsset(token);
+      setFromAmount("");
+      setToAmount("");
     }
   };
 
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setFromAmount(Number(event.target.value));
+    const value = event.target.value;
+    if (value === "" || (!isNaN(Number(value)) && Number(value) >= 0)) {
+      setFromAmount(value);
+    }
   };
 
-  const debounceQuoteCall = useCallback(debounce(getQuote, 500), []);
+  const debounceQuoteCall = useCallback(debounce(getQuote, 500), [
+    fromAsset,
+    toAsset,
+  ]);
 
   useEffect(() => {
-    debounceQuoteCall(fromAmount);
+    if (fromAmount && Number(fromAmount) > 0) {
+      debounceQuoteCall(Number(fromAmount));
+    } else {
+      setToAmount("");
+    }
   }, [fromAmount, debounceQuoteCall]);
 
   async function getQuote(currentAmount: number) {
-    if (isNaN(currentAmount) || !fromAsset || !toAsset) {
-      console.error(
-        "Invalid fromAmount value or assets not set:",
-        currentAmount
-      );
+    if (!currentAmount || !fromAsset || !toAsset) {
       return;
     }
 
-    const quote = await (
-      await fetch(
+    try {
+      const response = await fetch(
         `https://quote-api.jup.ag/v6/quote?inputMint=${
           fromAsset.address
         }&outputMint=${toAsset.address}&amount=${
           currentAmount * Math.pow(10, fromAsset.decimals)
         }&slippage=0.5`
-      )
-    ).json();
+      );
+      const quote = await response.json();
 
-    if (quote && quote.outAmount) {
-      const outAmountNumber =
-        Number(quote.outAmount) / Math.pow(10, toAsset.decimals);
-      setToAmount(outAmountNumber);
+      if (quote && quote.outAmount) {
+        const outAmountNumber =
+          Number(quote.outAmount) / Math.pow(10, toAsset.decimals);
+        setToAmount(outAmountNumber.toString());
+        setQuoteResponse(quote);
+      }
+    } catch (error) {
+      console.error("Error fetching quote:", error);
+      toast.error("Error fetching quote");
+      setToAmount("");
+      setQuoteResponse(null);
     }
-
-    setQuoteResponse(quote);
   }
 
   const handleSwapDirection = () => {
@@ -128,30 +119,31 @@ export default function Swap() {
 
   async function signAndSendTransaction() {
     if (!walletProvider || !connection || !quoteResponse) {
-      console.error(
-        "Wallet is not connected or does not support signing transactions"
-      );
+      console.error("Missing required dependencies for swap");
+      toast.error("Missing required dependencies for swap");
       return;
     }
 
-    // get serialized transactions for the swap
-    const { swapTransaction } = await (
-      await fetch("https://quote-api.jup.ag/v6/swap", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          quoteResponse,
-          userPublicKey: walletProvider.publicKey?.toString(),
-          wrapAndUnwrapSol: true,
-          // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
-          // feeAccount: "fee_account_public_key"
-        }),
-      })
-    ).json();
-
     try {
+      setSwapping(true);
+      if (swapping) {
+        toast.loading("Swapping...");
+      }
+      const { swapTransaction } = await fetch(
+        "https://quote-api.jup.ag/v6/swap",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            quoteResponse,
+            userPublicKey: walletProvider.publicKey?.toString(),
+            wrapAndUnwrapSol: true,
+          }),
+        }
+      ).then((res) => res.json());
+
       const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
       const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
       const signedTransaction = await walletProvider.signTransaction(
@@ -173,34 +165,49 @@ export default function Swap() {
         },
         "confirmed"
       );
-
+      setSwapping(false);
       console.log(`https://solscan.io/tx/${txid}`);
+      toast.success(
+        `Swap transaction successful: https://solscan.io/tx/${txid} `
+      );
     } catch (error) {
-      console.error("Error signing or sending the transaction:", error);
+      console.error("Error in swap transaction:", error);
+      toast.error("Error in swap transaction");
+      setSwapping(false);
     }
   }
 
-  if (!fromAsset || !toAsset) {
-    return <div>Loading...</div>;
-  }
+  const isSwapDisabled =
+    !fromAmount ||
+    !toAmount ||
+    Number(fromAmount) <= 0 ||
+    toAsset?.address === fromAsset?.address ||
+    swapping;
+
+  // if (!fromAsset || !toAsset) {
+  //   return <div>Loading...</div>;
+  // }
 
   return (
     <Card className="w-full">
       <CardContent className="pt-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Swap</h2>
-          {/* <TokenSearchModal/> */}
           <Button variant="ghost" size="icon">
             <Settings2Icon className="h-5 w-5" />
           </Button>
         </div>
 
-        {/* Input token */}
         <div className="rounded-2xl bg-gray-100 p-4 mb-2">
           <div className="flex justify-between mb-2">
             <label className="text-sm text-gray-500">You pay</label>
             <span className="text-sm text-gray-500">
-              Balance: 0.0 {fromAsset.name}
+              {formatBalance({
+                token: fromAsset,
+                balance: balances[fromAsset?.address],
+                isLoading: balancesLoading,
+                isWalletConnected: !!walletProvider?.publicKey,
+              })}{" "}
             </span>
           </div>
           <div className="flex gap-2">
@@ -211,32 +218,13 @@ export default function Swap() {
               onChange={handleFromValueChange}
               className="border-0 bg-transparent text-2xl focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
             />
-            <Select
-              value={fromAsset.symbol}
-              onValueChange={handleFromAssetChange}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {tokens.map((token) => (
-                  <SelectItem key={token?.address} value={token?.symbol}>
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={token?.logoURI}
-                        alt={token.name}
-                        className="w-5 h-5 rounded-full"
-                      />
-                      {token.symbol}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <TokenSearchModal
+              onSelect={handleFromAssetChange}
+              defaultToken={fromAsset}
+            />
           </div>
         </div>
 
-        {/* Swap direction button */}
         <div className="relative h-0">
           <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
             <Button
@@ -250,12 +238,16 @@ export default function Swap() {
           </div>
         </div>
 
-        {/* Output token */}
         <div className="rounded-2xl bg-gray-100 p-4 mt-2">
           <div className="flex justify-between mb-2">
             <label className="text-sm text-gray-500">You receive</label>
             <span className="text-sm text-gray-500">
-              Balance: 0.0 {toAsset.name}
+              {formatBalance({
+                token: toAsset,
+                balance: balances[toAsset?.address],
+                isLoading: balancesLoading,
+                isWalletConnected: !!walletProvider?.publicKey,
+              })}{" "}
             </span>
           </div>
           <div className="flex gap-2">
@@ -266,29 +258,13 @@ export default function Swap() {
               readOnly
               className="border-0 bg-transparent text-2xl focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
             />
-            <Select value={toAsset.symbol} onValueChange={handleToAssetChange}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {tokens.map((token) => (
-                  <SelectItem key={token?.address} value={token?.symbol}>
-                    <div className="flex items-center gap-2">
-                    <img
-                          src={token?.logoURI}
-                          alt={token.name}
-                          className="w-5 h-5 rounded-full"
-                        />
-                      {token.symbol}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <TokenSearchModal
+              onSelect={handleToAssetChange}
+              defaultToken={toAsset}
+            />
           </div>
         </div>
 
-        {/* Swap details */}
         <div className="mt-6 space-y-2 text-sm">
           <div className="flex justify-between text-gray-500">
             <span>Price Impact</span>
@@ -299,21 +275,23 @@ export default function Swap() {
             <span>~$1.50</span>
           </div>
           <br className="my-4" />
-          <div className="flex justify-between font-medium">
-            <span>Rate</span>
-            <span>
-              1 {fromAsset.name} = {(toAmount / fromAmount).toFixed(2)}{" "}
-              {toAsset.name}
-            </span>
-          </div>
+          {fromAmount && toAmount && Number(fromAmount) > 0 && (
+            <div className="flex justify-between font-medium">
+              <span>Rate</span>
+              <span>
+                1 {fromAsset.name} ={" "}
+                {(Number(toAmount) / Number(fromAmount)).toFixed(6)}{" "}
+                {toAsset.name}
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Swap button */}
         <Button
           className="w-full bg-zinc-700 mt-4 px-6 py-3 rounded-lg"
           size="lg"
           onClick={signAndSendTransaction}
-          disabled={toAsset.address === fromAsset.address}
+          disabled={isSwapDisabled}
         >
           Swap
         </Button>

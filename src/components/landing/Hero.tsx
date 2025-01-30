@@ -14,6 +14,7 @@ import {
 
 import Swap from "../app-components/Swap";
 import OnrampModal from "../app-components/Onramp";
+import OfframpModal from "../app-components/Offramp";
 
 export default function CryptoDashboard() {
   return (
@@ -29,8 +30,8 @@ export default function CryptoDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">$12,345.67</div>
-            <div className="mt-4 space-y-4">
-              <OnrampModal />
+            <div className="mt-4 flex items-center gap-4">
+              <OnrampModal /> <OfframpModal />
             </div>
           </CardContent>
         </Card>
