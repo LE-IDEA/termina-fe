@@ -8,8 +8,8 @@ const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["l
 export default function CreateAccount() {
   return (
     <>
-      <div className="size-full h-screen items-center justify-center bg-black p-[24px]">
-        <div className="flex flex-col items-center justify-between h-full py-5 ">
+      <div className="size-full h-screen items-center justify-center bg-black md:p-[24px] p-[48px]">
+        <div className="flex flex-col items-center justify-between h-full md:py-5 ">
 
           <div className="flex flex-col items-start  justify-between gap-[48px]" >
             <div className="mx-1 px-[20px]">

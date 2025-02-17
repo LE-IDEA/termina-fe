@@ -20,7 +20,7 @@ export default function ConfirmEmail() {
                  </div>
      
                  <div className="flex flex-col gap-[24px] items-center justify-center">
-                   <h2 className={`${instrumentSerif.className} text-white font-normal text-[36px] leading-[36px] tracking-[0%] text-center`}>Confirm email</h2>
+                   <h2 className={`${instrumentSerif.className} text-white font-normal text-[36px] leading-[36px] tracking-[0%] text-center`}>Confirm mail</h2>
      
                    <div className="flex flex-col gap-3 items-center justify-center ">
                      <div className="flex flex-row p-2 gap-1 w-[280px] border border-1 border-solid border-white rounded-2xl">
@@ -29,7 +29,7 @@ export default function ConfirmEmail() {
                          width={20} height={20}
                        />
                        <input type="text"
-                    placeholder="4-digit code"
+                         placeholder="4-digit code"
                          className="ml-2 py-1 flex-1 bg-black placeholder:text-[#fff] placeholder:font-normal placeholder:text-[16px] placeholder:leading-[16px] placeholder:tracking-[0%] placeholder:opacity-50  " />
                      </div>
                      <button className="text-white bg-[#0077FF] w-[280px] px-[48px] py-[12px] rounded-2xl">
