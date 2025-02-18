@@ -55,12 +55,12 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
   }, [defaultToken]);
 
   // Debounced search function
-  const handleSearch = useCallback(
-    debounce((value: string) => {
-      setSearch(value);
-    }, 300),
-    []
-  );
+  // const handleSearch = useCallback(
+  //   debounce((value: string) => {
+  //     setSearch(value);
+  //   }, 300),
+  //   []
+  // );
 
   // Handle token selection
   const handleSelect = (token: Token) => {
@@ -102,7 +102,7 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
         <Command className="rounded-lg">
           <CommandInput
             placeholder="Search token name or symbol..."
-            onValueChange={handleSearch} // ✅ Fix: Directly pass the function
+            onValueChange={setSearch}
           />
           <CommandList>
             {isLoading ? (
