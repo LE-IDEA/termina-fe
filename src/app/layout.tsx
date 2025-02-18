@@ -16,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`bg-gray-50 antialiased`}>
+      <body className={`dark bg-gray-950 antialiased`}>
         <QueryProvider>
           <ReownProvider>
             <div>

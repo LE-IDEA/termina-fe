@@ -12,15 +12,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import Swap from "../app-components/Swap";
-import OnrampModal from "../app-components/Onramp";
-import OfframpModal from "../app-components/Offramp";
+// import Swap from "../app-components/Swap";
+// import OnrampModal from "../app-components/Onramp";
+// import OfframpModal from "../app-components/Offramp";
+// import ActionWrapper from "../app-components/ActionWrapper";
 
 export default function CryptoDashboard() {
   return (
-    <div className="w-11/12 md:max-w-6xl mx-auto bg-background my-4 p-4 md:p-6 md:my-6 lg:my-8">
+    <div className="min-h-screen bg-transparent ">
       <div className="">
-        <Card className="w-full md:w-1/2">
+        {/* <Card className="w-full md:w-1/2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Wallet className="h-5 w-5" />
@@ -34,13 +35,11 @@ export default function CryptoDashboard() {
               <OnrampModal /> <OfframpModal />
             </div>
           </CardContent>
-        </Card>
-        <div className="grid gap-4 mt-8 md:grid-cols-2 lg:grid-cols-6">
-          <div className="lg:col-span-3">
-            <Swap />
-          </div>
+        </Card> */}
+        {/* <div className="grid gap-4 mt-8 md:grid-cols-2 lg:grid-cols-6"> */}
+  
 
-          <Card className="lg:col-span-3">
+          {/* <Card className="lg:col-span-3">
             <CardHeader>
               <CardTitle>Trending Tokens</CardTitle>
               <CardDescription>Popular tokens in the last 24h</CardDescription>
@@ -110,9 +109,9 @@ export default function CryptoDashboard() {
                 ))}
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
-      </div>
+      {/* </div> */}
     </div>
   );
 }

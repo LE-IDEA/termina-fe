@@ -18,11 +18,11 @@ export default function NavBar({ isHome = true }: NavBarProps) {
         <Image src={gradient} alt="" className="w-full h-full object-cover" />
       </div>
       <nav
-        className={`relative z-10 flex bg-white items-center justify-between p-4 px-6 mt-4 md:mt-6 border ${
+        className={`relative z-10 flex  items-center justify-between p-4 px-6 mt-4 md:mt-6 border ${
           isOpen ? "rounded-t-[36px]" : "rounded-[36px]"
         }  shadow-md`}
       >
-        <Image src="/Termina-logo.png" alt="" width={120} height={100} />
+        <Image src="/Logo-white.png" alt="" width={120} height={100} />
 
         <div className="flex items-center space-x-12">
           {/* <Link
