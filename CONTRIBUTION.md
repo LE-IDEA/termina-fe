@@ -50,7 +50,6 @@ The project uses a multi-branch strategy to manage different aspects of the appl
 3. **Merge**
    - Merge only after approval
    - Use descriptive merge commit messages
-   - Don't merge your own PRs unless explicitly allowed
 
 ## Branch Merging Rules
 ---------------------
