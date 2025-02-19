@@ -19,8 +19,8 @@ export default function NavBar({ isHome = true }: NavBarProps) {
       </div>
       <nav
         className={`relative z-10 flex bg-white items-center justify-between p-4 px-6 mt-4 md:mt-6 border ${
-          isOpen ? "rounded-t-[36px]" : "rounded-[36px]"
-        }  shadow-md`}
+          isOpen ? "rounded-t-[36px] border-b-0" : "rounded-[36px] shadow-md"
+        }  `}
       >
         <Image src="/Termina-logo.png" alt="" width={120} height={100} />
 
@@ -45,8 +45,7 @@ export default function NavBar({ isHome = true }: NavBarProps) {
           >
             White Paper
           </Link>
-        <div>
-        </div>
+          <div></div>
         </div>
 
         {/* <MobileNav /> */}
@@ -60,7 +59,7 @@ export default function NavBar({ isHome = true }: NavBarProps) {
           </button>
 
           {isOpen && (
-            <div className="absolute w-11/12 mx-auto top-[80px] left-0 right-0 bg-white border-b rounded-b-[36px] shadow-md p-4 space-y-4">
+            <div className="absolute w-full top-[80px] left-0 right-0 bg-white border-b rounded-b-[36px] shadow-md p-4 space-y-4">
               <Link
                 href="https://x.com/use_Termina/status/1883078030907908389"
                 className="block py-2 font-medium hover:text-blue-600"
