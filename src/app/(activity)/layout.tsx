@@ -8,7 +8,7 @@ export default async function RootLayout({
 
 
   return (
-    <main className="relative items-center justify-center p-[24px] w-[412px]">
+    <main className="relative items-center justify-center px-[24px] py-2 w-[412px]">
       {children}
 
       <DownNav />

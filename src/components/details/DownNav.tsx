@@ -1,12 +1,11 @@
 "use client"
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import Link from "next/link";
 
 const downNavLinks = [
     {
         imgURL: "HomeSwap.svg",
-        route: "/",
+        route: "/spot",
         id: 1,
     },
     {
@@ -15,13 +14,13 @@ const downNavLinks = [
         id: 2,
     },
     {
-        mgURL: "/DiamondSwap.svg",
-        route: "/transaction-history",
+        imgURL: "/DiamondSwap.svg",
+        route: "/",
         id: 3,
     },
     {
         imgURL: "/WatchSwap.svg",
-        route: "/payment-transfer",
+        route: "/",
         id: 4,
     }
 ];

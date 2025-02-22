@@ -1,3 +1,4 @@
+"use client"
 import Image from "next/image"
 import { Geologica, Instrument_Serif } from "next/font/google";
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
@@ -6,11 +7,18 @@ import HottestSlider from "@/components/details/HottestSlider";
 import HottestCard from "@/components/details/HottestCard";
 import HotList from "@/components/details/HotList";
 import HotRecent from "@/components/details/HotRecent";
+import CurrencyChange from "@/components/details/CurrencyChange";
+import { useState } from "react";
 
 
 const page = () => {
+  const [isCurr, setIsCurr] = useState(true);
+  const changeCurr = () => {
+    setIsCurr(!isCurr);
+  }
+
   return (
-    <div className="w-[364px] h-full overflow-auto hide-scrollbar gap-[24px] flex flex-col mb-[200px]">
+    <div className="relative w-[364px] h-full overflow-auto hide-scrollbar gap-[24px]  flex flex-col mb-[200px]">
       <div className="flex flex-row w-[364px] h-[36px] justify-between">
         <div className='flex flex-row w-[84px] h-[36px] gap-[12px]'>
           <Image src="/SearchFrame.svg" alt='prev' width={36} height={36} />
@@ -18,6 +26,7 @@ const page = () => {
         </div>
         <Image src="/UserFrame.svg" alt='prev' width={36} height={36} />
       </div>
+
       <h1 className={`${instrumentSerif.className} font-bold text-[36px] leading-[36px] tracking-[0%]`}>Gm mate </h1>
 
       {/* add&withdarw */}
@@ -27,7 +36,7 @@ const page = () => {
             <div className="w-[340px] h-[36px] flex flex-row justify-between">
               <h1 className={` ${instrumentSerif.className} font-normal text-[36px] leading-[36px] tracking-[0] text-center text-black`}>$200.02</h1>
               <div className='flex flex-row w-[50px] h-[32px]'>
-                <button title='change coin'><Image src="/carretDown.svg" alt='prev' width={18} height={18} /></button>
+                <button title='change coin' onClick={changeCurr}><Image src="/ArrowDown.svg" alt='prev' width={18} height={18} /></button>
                 <Image src="/Solana.svg" alt='prev' width={32} height={32} />
               </div>
             </div>
@@ -65,14 +74,14 @@ const page = () => {
         </div>
 
         <div className=" overflow-x-auto hide-scrollbar">
-        <HottestCard />
+          <HottestCard />
         </div>
       </div>
 
       <HotList />
       <HotRecent />
 
-
+      {!isCurr ? <CurrencyChange /> : null}
 
     </div>
 
