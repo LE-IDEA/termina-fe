@@ -7,7 +7,7 @@ const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 
 const page = () => {
     return (
-        <div className="relative items-center justify-center p-[24px] w-[412px]">
+        <div className="">
             <div className="w-[364px] h-[36px] gap-[24px] flex flex-col">
                 <div className="flex flex-row w-[364px] h-[36px] justify-between">
                     <Image
@@ -91,16 +91,6 @@ const page = () => {
 
 
             </div>
-
-
-            <nav className="fixed bottom-0 left-0 bg-[#ebebeb] w-[412px] h-[96px] flex justify-between rounded-tl-[60px] rounded-tr-[60px] pt-[36px] pr-[48px] pb-[36px] pl-[48px]">
-                <Image src="/HomeSwap.svg" alt='Home' width={24} height={24} />
-                <Image src="/SwapSwap.svg" alt='Home' width={24} height={24} />
-                <Image src="/DiamondSwap.svg" alt='Home' width={24} height={24} />
-                <Image src="/WatchSwap.svg" alt='Home' width={24} height={24} />
-
-            </nav>
-
         </div>
     )
 }
