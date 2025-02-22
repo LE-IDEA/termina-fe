@@ -47,7 +47,7 @@ const page = () => {
 
                     <div className="flex flex-row gap-[6px] w-[364px]">
                         <div className="py-[12px] pl-[2px] items-start rounded-xl h-[36px]  flex-1 bg-[#EBEBEB]">
-                            <h1 className={`${geologica.className} text-center font-geologica font-normal text-[12px] leading-[12px] tracking-[0%]`}>Raydium V1 - From Contract</h1>
+                            <h1 className={`${geologica.className} text-center font-normal text-[12px] leading-[12px] tracking-[0%]`}>Raydium V1 - From Contract</h1>
                         </div>
                         <Image
                             src="/globeFrame.svg"

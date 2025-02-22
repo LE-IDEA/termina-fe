@@ -10,7 +10,7 @@ const TopHolds = () => {
             </h1>
             <div className="flex flex-col w-[340px] h-[56px] gap-2.5">
                 <div className="flex flex-row w-[340px] h-[12px] gap-[4.5px] justify-between">
-                    <h1 className="font-geologica font-medium text-[12px] leading-[12px] tracking-[0%]">
+                    <h1 className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%]`}>
                         Creator
                     </h1>
                     <div className="flex flex-row w-[162px] h-[12px] gap-[12px]">
@@ -23,7 +23,7 @@ const TopHolds = () => {
 
                 </div>
                 <div className="flex flex-row w-[340px] h-[12px] gap-[4.5px] justify-between">
-                    <h1 className="font-geologica font-medium text-[12px] leading-[12px] tracking-[0%]">
+                    <h1 className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%]`}>
                         Creator
                     </h1>
                     <div className="flex flex-row w-[162px] h-[12px] gap-[12px]">
@@ -36,7 +36,7 @@ const TopHolds = () => {
 
                 </div>
                 <div className="flex flex-row w-[340px] h-[12px] gap-[4.5px] justify-between">
-                    <h1 className="font-geologica font-medium text-[12px] leading-[12px] tracking-[0%]">
+                    <h1 className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%]`}>
                         Creator
                     </h1>
                     <div className="flex flex-row w-[162px] h-[12px] gap-[12px]">
@@ -53,7 +53,7 @@ const TopHolds = () => {
 
             <div className="w-[70px] h-[12px] gap-1 flex flex-row">
                 <Image src="/MoreCircle" alt="see more" width={12} height={12} />
-                <h1 className="font-geologica font-medium text-[12px] leading-[12px] tracking-[0%]">
+                <h1 className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%]`}>
                     See More
                 </h1>
             </div>
