@@ -1,12 +1,16 @@
-import React from 'react'
 import Image from "next/image"
 import { Geologica, Instrument_Serif } from "next/font/google";
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
+import HottestSlider from "@/components/details/HottestSlider";
+import HottestCard from "@/components/details/HottestCard";
+import HotList from "@/components/details/HotList";
+import HotRecent from "@/components/details/HotRecent";
+
 
 const page = () => {
   return (
-    <div className="w-[364px] h-[36px] gap-[24px] flex flex-col">
+    <div className="w-[364px] h-full overflow-auto hide-scrollbar gap-[24px] flex flex-col mb-[200px]">
       <div className="flex flex-row w-[364px] h-[36px] justify-between">
         <div className='flex flex-row w-[84px] h-[36px] gap-[12px]'>
           <Image src="/SearchFrame.svg" alt='prev' width={36} height={36} />
@@ -14,7 +18,7 @@ const page = () => {
         </div>
         <Image src="/UserFrame.svg" alt='prev' width={36} height={36} />
       </div>
-      <h1 className={`${instrumentSerif.className} font-normal text-xxl leading-[36px] tracking-normal`}>Gm mate </h1>
+      <h1 className={`${instrumentSerif.className} font-bold text-[36px] leading-[36px] tracking-[0%]`}>Gm mate </h1>
 
       {/* add&withdarw */}
       <div className='flex flex-col w-[364px] h-[188px] gap-[12px]'>
@@ -58,9 +62,15 @@ const page = () => {
         <div className='w-[93px] h-[15px] flex flex-row'>
           <h1 className={`font-normal text-[15px] leading-[15px] tracking-[0%] text-center ${instrumentSerif.className}`}>Hottest Daily</h1>
           <Image src="/bolt.svg" alt='hot' width={12} height={12} />
+        </div>
 
+        <div className=" overflow-x-auto hide-scrollbar">
+        <HottestCard />
         </div>
       </div>
+
+      <HotList />
+      <HotRecent />
 
 
 
