@@ -4,12 +4,12 @@ import { usePathname } from "next/navigation";
 
 const downNavLinks = [
     {
-        imgURL: "HomeSwap.svg",
+        imgURL: "/HomeSwap.svg",
         route: "/spot",
         id: 1,
     },
     {
-        imgURL: "SwapSwap.svg",
+        imgURL: "/SwapSwap.svg",
         route: "/swap",
         id: 2,
     },
