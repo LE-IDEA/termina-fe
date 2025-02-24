@@ -3,12 +3,13 @@ import Image from "next/image"
 import { Geologica, Instrument_Serif } from "next/font/google";
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
-import HottestSlider from "@/components/details/HottestSlider";
 import HottestCard from "@/components/details/HottestCard";
 import HotList from "@/components/details/HotList";
 import HotRecent from "@/components/details/HotRecent";
 import CurrencyChange from "@/components/details/CurrencyChange";
 import { useState } from "react";
+import Link from "next/link";
+
 
 
 const page = () => {
@@ -54,14 +55,20 @@ const page = () => {
         </div>
 
         <div className="flex flex-row  w-[364px] h-[48px] gap-[12px]">
-          <button title='Add' className="items-center justify-center flex flex-row w-[176px] h-[48px] p-[12px] gap-[10px] bg-[#ebebeb] rounded-md">
-            <Image src="/Add.svg" alt='Add' width={24} height={24} />
-            <h1 className={`${geologica.className} my-auto font-normal text-[20px] leading-[20px] tracking-[0%] text-center text-black`}>Add</h1>
-          </button>
-          <button title='Withdraw' className="items-center justify-center flex flex-row w-[176px] h-[48px] p-[12px] gap-[10px] bg-[#ebebeb] rounded-md">
-            <Image src="/Withdraw.svg" alt='Withdraw' width={24} height={24} />
-            <h1 className={`${geologica.className} my-auto font-normal text-[20px] leading-[20px] tracking-[0%] text-center text-black`}>Withdraw</h1>
-          </button>
+          <Link href='/add'>
+            <button title='Add' className="items-center justify-center flex flex-row w-[176px] h-[48px] p-[12px] gap-[10px] bg-[#ebebeb] rounded-md">
+              <Image src="/Add.svg" alt='Add' width={24} height={24} />
+              <h1 className={`${geologica.className} my-auto font-normal text-[20px] leading-[20px] tracking-[0%] text-center text-black`}>Add</h1>
+            </button>
+          </Link>
+
+          <Link href='/withdraw'>
+            <button title='Withdraw' className="items-center justify-center flex flex-row w-[176px] h-[48px] p-[12px] gap-[10px] bg-[#ebebeb] rounded-md">
+              <Image src="/Withdraw.svg" alt='Withdraw' width={24} height={24} />
+              <h1 className={`${geologica.className} my-auto font-normal text-[20px] leading-[20px] tracking-[0%] text-center text-black`}>Withdraw</h1>
+            </button>
+          </Link>
+
         </div>
 
       </div>

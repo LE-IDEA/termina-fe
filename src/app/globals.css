@@ -64,6 +64,14 @@ body {
     --chart-5: 340 75% 55%;
   }
 }
+@keyframes shine {
+    0%, 100% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(2);
+    }
+}
 
 @layer base {
   * {
