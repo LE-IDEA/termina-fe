@@ -1,5 +1,4 @@
 "use client"
-import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
@@ -28,7 +27,7 @@ const downNavLinks = [
 const DownNav = () => {
     const pathname = usePathname();
     return (
-        <nav className="fixed bottom-0 left-0 bg-[#ebebeb] w-[412px] h-[96px] flex justify-between rounded-tl-[60px] rounded-tr-[60px] pt-[36px] pr-[48px] pb-[36px] pl-[48px]">
+        <nav className="fixed bottom-0 left-0 bg-[#ebebeb] h-[96px] flex justify-between rounded-tl-[60px] rounded-tr-[60px] py-[36px] px-[48px] w-full z-50 md:hidden">
             {
                 downNavLinks.map((item) => {
                     const isActive = pathname === item.route || pathname.startsWith(`${item.route}/`);

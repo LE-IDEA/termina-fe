@@ -11,7 +11,7 @@ const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["l
 const page = () => {
 
     return (
-        <div className="items-center justify-center p-[24px] sm:px-20 md:px-10  lg:px-38 xl:px-[360px] 2xl:px-90 ">
+        <div className="items-center justify-center p-[24px] sm:px-20 md:px-10  lg:px-36 xl:px-[360px] 2xl:px-90 ">
             <div className="flex flex-col gap-[24px] ">
 
                 <div className="flex flex-row h-[36px] justify-between">
