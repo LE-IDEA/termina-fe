@@ -8,7 +8,7 @@ const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 
 const page = () => {
     return (
-        <section className=" md:flex md:flex-row md:gap-4 xl:mx-">
+        <section className=" md:flex md:flex-row md:gap-4">
             <div className="  gap-[24px] flex flex-col p-2 sm:px-7 md:px-22 xl:w-[600px]">
                 <div className="flex flex-row  h-[36px] justify-between md:hidden">
                     <Image

@@ -12,23 +12,22 @@ const page = () => {
     const [response, setResponse] = useState(false);
     const [blackResponse, redResponse] = useState(true);
     return (
-        <div className="flex flex-col gap-3 w-[364px] h-[191px] rounded-[24px] ">
-            <div className={`w-[364px] h-[136px] rounded-[12px] ${response ? blackResponse ? 'bg-black' : 'bg-[#ffcbcb]' : null
+        <div className="flex flex-col gap-3 64px] h-[191px] rounded-[24px] md:w-[500px] sm:w-[400px] ">
+            <div className={` h-[136px] rounded-[12px] ${response ? blackResponse ? 'bg-black' : 'bg-[#ffcbcb]' : null
                 }`}>
-                <div className={`flex flex-row gap-3 w-[364px] h-[104px] bg-white p-3 border-[1px] border-solid ${response ? blackResponse ? 'border-black' : 'border-[#ffcbcb]' : null} `}>
-                    <div className="flex flex-col gap-1.5 w-[308px] h-[80px]">
-                        <div className="flex flex-col gap-1 w-[308px] h-[34px]">
+                <div className={`flex flex-row gap-3 justify-between h-[104px] bg-white p-3 border-[1px] border-solid ${response ? blackResponse ? 'border-black' : 'border-[#ffcbcb]' : null} `}>
+                    <div className="flex flex-col gap-1.5  h-[80px]">
+                        <div className="flex flex-col gap-1  h-[34px]">
                             <label htmlFor="amount" className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%]`}>NGN</label>
-                            <input id="amount" className={`w-[308px] h-[20px] ${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal`} placeholder="0.00" title="Enter amount" onFocus={() => setIsInputActive(true)}
+                            <input id="amount" className={`08px] h-[20px] ${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal`} placeholder="0.00" title="Enter amount" onFocus={() => setIsInputActive(true)}
                                 onBlur={() => setIsInputActive(false)}></input>
                         </div>
 
-                        <div className="w-[308px] border-[0.4px] border-solid border-[#444444]
- opacity-50 rounded-lg"></div>
+                        <div className="08px] border-[0.4px] border-solid border-[#444444] opacity-50 rounded-lg md:w-[450px] sm:w-[350px]"></div>
 
-                        <div className="flex flex-col gap-1 w-[308px] h-[34px]">
+                        <div className="flex flex-col gap-1 h-[34px]">
                             <label htmlFor="amount" className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%]`}>USDC</label>
-                            <input id="amount" className={`w-[308px] h-[20px] ${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal`} placeholder="0.00" title="Enter amount"></input>
+                            <input id="amount" className={`08px] h-[20px] ${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal`} placeholder="0.00" title="Enter amount"></input>
                         </div>
 
 
@@ -47,7 +46,7 @@ const page = () => {
             </div>
 
             <button
-                className={`flex gap-2 w-[364px] h-[43px] pt-3 pr-6 pb-3 pl-6 rounded-[12px] ${isInputActive ? 'bg-blue-500' : 'bg-[#444444]'
+                className={`flex gap-2 h-[43px] pt-3 pr-6 pb-3 pl-6 rounded-[12px] ${isInputActive ? 'bg-blue-500' : 'bg-[#444444]'
                     }`}
             >
             <h1 className={`m-auto ${geologica.className}  font-normal text-[16px] leading-[19.2px] tracking-normal text-center`}>Submit</h1>

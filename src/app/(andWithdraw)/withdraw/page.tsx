@@ -12,17 +12,18 @@ const page = () => {
     const [isInputActive, setIsInputActive] = useState(false);
     const [response, setResponse] = useState(false);
     const [blackResponse, redResponse] = useState(true);
+
     const bankOptions = [
         { name: "Access Bank" }, { name: "First Bank" }, { name: "GT Bank" }, { name: "Zenith Bank" }, { name: "UBA" }
     ]
     return (
-        <div className="flex flex-col gap-3 w-[364px] rounded-[24px] ">
-            <input type="number" name="Account Number" id="acct" title="Enter account number" placeholder="10 digit account number" className={`w-[364px] h-[44px] p-[10px]  ${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] border-[0.4px] border-solid  rounded-lg`} />
+        <div className="flex flex-col rounded-[24px] gap-3 md:w-[500px]">
+            <input type="number" name="Account Number" id="acct" title="Enter account number" placeholder="10 digit account number" className={` p-[10px]  ${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] border-[0.4px] border-solid  rounded-lg`} />
             <div className={`flex flex-col rounded-lg ${!isAccount ? 'bg-black' : !notAccount ? 'bg-[#ffcbcb]' : null}`}>
-                <input type="number" name="Bank name" id="acct" title="Enter bank name" placeholder="10 digit account number" className={`w-[364px] h-[44px] p-[10px]  ${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] border-[0.4px] border-solid  rounded-lg ${!isAccount ? 'border-black' : !notAccount ? 'border-[#ffcbcb]' : null}`} />
+                <input type="number" name="Bank name" id="acct" title="Enter bank name" placeholder="10 digit account number" className={`p-[10px] ${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] border-[0.4px] border-solid  rounded-lg ${!isAccount ? 'border-black' : !notAccount ? 'border-[#ffcbcb]' : null}`} />
                 {
                     !isAccount ?
-                        <div className="flex flex-col bg-black w-[364px]  p-[10px] gap-[12px] rounded-br-[12px] rounded-bl-[12px]" >
+                        <div className="flex flex-col bg-black gap-[12px] rounded-br-[12px] rounded-bl-[12px] p-3" >
                             {bankOptions.slice(0, 3).map((bank, index) => (
                                 <div key={index} className=" ">
                                     <h1 className={`${geologica.className} font-medium text-[8px] leading-[8px] tracking-[0% text-white`}>{bank.name}</h1>
@@ -33,8 +34,8 @@ const page = () => {
                 }
                 {
                     !notAccount ?
-                        <div className="flex  h-[32px] p-[10px] items-center  rounded-br-[12px] rounded-bl-[12px] bg-[#ffcbcb] ">
-                            <div className="flex flex-row w-[344px] h-[12px] items-center justify-center gap-[4px] mx-auto">
+                        <div className="flex p-[10px] items-center rounded-br-[12px] rounded-bl-[12px] bg-[#ffcbcb] ">
+                            <div className="flex flex-row items-center justify-center gap-[4px] mx-auto">
                                 <Image src="/circleDetaill.svg" alt='warning' width={12} height={12} className="my-auto" />
                                 <h1 className={`${geologica.className} font-medium text-[8px] my-auto leading-[8px] tracking-[0%] text-center text-[#AC1717]`}>Not in our registry</h1>
                             </div>
@@ -43,22 +44,20 @@ const page = () => {
                 }
             </div>
 
-            <div className={`w-[364px] h-[136px] rounded-[12px] ${response ? blackResponse ? 'bg-black' : 'bg-[#ffcbcb]' : null
-                }`}>
-                <div className={`flex flex-row gap-3 w-[364px] h-[104px] bg-white p-3 border-[1px] border-solid ${response ? blackResponse ? 'border-black' : 'border-[#ffcbcb]' : null} `}>
-                    <div className="flex flex-col gap-1.5 w-[308px] h-[80px]">
-                        <div className="flex flex-col gap-1 w-[308px] h-[34px]">
+            <div className={` rounded-[12px] ${response ? blackResponse ? 'bg-black' : 'bg-[#ffcbcb]' : null}`}>
+                <div className={`flex flex-row gap-3 justify-between bg-white p-3 border-[1px] border-solid ${response ? blackResponse ? 'border-black' : 'border-[#ffcbcb]' : null}`}>
+                    <div className="flex flex-col gap-1.5 ">
+                        <div className="flex flex-col gap-1 ">
                             <label htmlFor="amount" className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%]`}>NGN</label>
-                            <input id="amount" className={`w-[308px] h-[20px] ${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal`} placeholder="0.00" title="Enter amount" onFocus={() => setIsInputActive(true)}
+                            <input id="amount" className={` h-[20px] ${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal`} placeholder="0.00" title="Enter amount" onFocus={() => setIsInputActive(true)}
                                 onBlur={() => setIsInputActive(false)}></input>
                         </div>
 
-                        <div className="w-[308px] border-[0.4px] border-solid border-[#444444]
- opacity-50 rounded-lg"></div>
+                        <div className=" border-[0.4px] border-solid border-[#444444] opacity-50 rounded-lg md:w-[450px]"></div>
 
-                        <div className="flex flex-col gap-1 w-[308px] h-[34px]">
+                        <div className="flex flex-col gap-1 ">
                             <label htmlFor="amount" className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%]`}>USDC</label>
-                            <input id="amount" className={`w-[308px] h-[20px] ${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal`} placeholder="0.00" title="Enter amount"></input>
+                            <input id="amount" className={`${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal`} placeholder="0.00" title="Enter amount"></input>
                         </div>
 
 
@@ -76,25 +75,25 @@ const page = () => {
 
             </div>
             {!isAccount ?
-                <div className={`flex gap-2 w-[364px] h-[43px] pt-3 pr-6 pb-3 pl-6 rounded-[12px] bg-black`} >
+                <div className={`flex gap-2 px-6 py-3 rounded-[12px] bg-black`} >
                     <h1 className={`m-auto ${geologica.className}  font-normal text-[16px] leading-[19.2px] tracking-normal text-white text-center`}>John Idaku Ifechi</h1>
                 </div> : null
             }
 
             {
                 !notAccount ?
-                    <div className={`flex flex-col ga w-[364px] h-[43px] rounded-[12px] bg-[#ffcbcb] items-center `} >
+                    <div className={`flex flex-col gap-2 rounded-[12px] bg-[#ffcbcb] items-center `} >
 
-                        <div className="flex flex-row w-[344px] h-[12px] gap-[4px] m-auto">
+                        <div className="flex flex-row  px-6 py-3 gap-[4px] m-auto">
                             <Image src="/circleDetaill.svg" alt='warning' width={12} height={12} />
-                            <h1 className={`${geologica.className} font-medium text-[8px] leading-[8px] my-auto tracking-[0%] text-center text-[#AC1717]`}>Not in our registry</h1>
+                            <h1 className={`${geologica.className} font-medium text-[8px] leading-[8px] my-auto tracking-[0%] text-center text-[#AC1717]`}>account not found</h1>
                         </div>
 
                     </div>
                     : null
             }
 
-            <button className={`flex gap-2 w-[364px] h-[43px] pt-3 pr-6 pb-3 pl-6 rounded-[12px] ${isInputActive ? 'bg-blue-500' : 'bg-[#444444]'}`} >
+            <button className={`flex gap-2 py-3 px-6 rounded-[12px] ${isInputActive ? 'bg-blue-500' : 'bg-[#444444]'}`} >
             <h1 className={`m-auto ${geologica.className}  font-normal text-[16px] leading-[19.2px] tracking-normal text-white text-center`}>Submit</h1>
         </button>
         </div >
