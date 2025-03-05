@@ -1,9 +1,5 @@
-"use client";
 import { useAppKitProvider } from "@reown/appkit/react";
-import {
-  useAppKitConnection,
-  type Provider,
-} from "@reown/appkit-adapter-solana/react";
+import { useAppKitConnection, type Provider } from "@reown/appkit-adapter-solana/react";
 import { VersionedTransaction } from "@solana/web3.js";
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "../ui/card";
@@ -16,6 +12,8 @@ import TokenSearchModal from "./TokenModal";
 import { formatBalance } from "@/utils/formattedbalances";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import toast from "react-hot-toast";
+import { useSolBalance } from "@/hooks/useSolBalance";
+import { useJustInTimeSwap } from "@/hooks/useJustInTimeSwap";
 
 export default function Swap() {
   const { connection } = useAppKitConnection();
@@ -31,6 +29,30 @@ export default function Swap() {
   const [quoteResponse, setQuoteResponse] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [swapping, setSwapping] = useState(false);
+  const [estimatedFee, setEstimatedFee] = useState(0.001); // Default fee estimate
+
+  // Sol balance hook
+  const { 
+    solBalance, 
+    fetchSolBalance, 
+    needsJustInTimeSwap 
+  } = useSolBalance({
+    connection,
+    publicKey: walletProvider?.publicKey || null
+  });
+
+  // Just-in-time swap hook
+  const { 
+    executeJustInTimeSwap, 
+    isLoading: jitSwapLoading 
+  } = useJustInTimeSwap({
+    connection,
+    publicKey: walletProvider?.publicKey || null,
+    amount:Number(fromAmount),
+    signTransaction: walletProvider?.signTransaction || null,
+    fetchUserSolBalance: fetchSolBalance,
+ 
+  });
 
   useEffect(() => {
     if (tokens && tokens.length >= 2 && !isInitialized) {
@@ -78,6 +100,58 @@ export default function Swap() {
     }
   }, [fromAmount, debounceQuoteCall]);
 
+  // Function to estimate the transaction fee
+  async function getEstimatedSwapFee(quote) {
+    if (!quote || !connection || !walletProvider?.publicKey) {
+      return 0.001; // Default fallback
+    }
+
+    try {
+      const { swapTransaction, priorityFee, otherFees } = await fetch(
+        "https://quote-api.jup.ag/v6/swap",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            quoteResponse: quote,
+            userPublicKey: walletProvider.publicKey.toString(),
+            wrapAndUnwrapSol: true,
+            computeUnitPriceMicroLamports: 100000,
+          }),
+        }
+      ).then((res) => res.json());
+
+      // Calculate total fee
+      let totalFeeInSol = 0;
+      
+      // Base network fee
+      const networkFee = 0.000005; 
+      
+      // Add priority fee if provided
+      if (priorityFee) {
+        totalFeeInSol += Number(priorityFee) / 10**9;
+      }
+      
+      // Add other fees if provided
+      if (otherFees && otherFees.signatureFee) {
+        totalFeeInSol += Number(otherFees.signatureFee) / 10**9;
+      }
+      
+      // Include network fee
+      totalFeeInSol += networkFee;
+      
+      // Add buffer (20%)
+      totalFeeInSol *= 1.2;
+      
+      return Math.max(totalFeeInSol, 0.001); // Minimum fee of 0.001 SOL
+    } catch (error) {
+      console.error("Error estimating swap fee:", error);
+      return 0.001; // Default fallback
+    }
+  }
+
   async function getQuote(currentAmount: number) {
     if (!currentAmount || !fromAsset || !toAsset) {
       return;
@@ -98,6 +172,10 @@ export default function Swap() {
           Number(quote.outAmount) / Math.pow(10, toAsset.decimals);
         setToAmount(outAmountNumber.toString());
         setQuoteResponse(quote);
+        
+        // Update fee estimate
+        const fee = await getEstimatedSwapFee(quote);
+        setEstimatedFee(fee);
       }
     } catch (error) {
       console.error("Error fetching quote:", error);
@@ -126,9 +204,32 @@ export default function Swap() {
 
     try {
       setSwapping(true);
-      if (swapping) {
-        toast.loading("Swapping...");
+      
+      // Check if user needs just-in-time swap for SOL
+      const needsJit = needsJustInTimeSwap(estimatedFee);
+      
+      if (needsJit) {
+        // toast.loading("You need SOL for transaction fees. Performing just-in-time swap...");
+        
+        // Execute JIT swap using the fromAsset token
+        // We're assuming the from token isn't SOL itself
+        if (fromAsset.address === "So11111111111111111111111111111111111111112") { // SOL mint address
+          toast.error("Cannot use SOL as the source token for fee coverage");
+          setSwapping(false);
+          return;
+        }
+        
+        const jitResult = await executeJustInTimeSwap(fromAsset.address, estimatedFee);
+        
+        if (!jitResult) {
+          // toast.error("Failed to acquire SOL for transaction fees");
+          setSwapping(false);
+          return;
+        }
       }
+
+      toast.loading("Preparing swap transaction...");
+      
       const { swapTransaction } = await fetch(
         "https://quote-api.jup.ag/v6/swap",
         {
@@ -138,18 +239,20 @@ export default function Swap() {
           },
           body: JSON.stringify({
             quoteResponse,
-            userPublicKey: walletProvider.publicKey?.toString(),
+            userPublicKey: walletProvider.publicKey.toString(),
             wrapAndUnwrapSol: true,
           }),
         }
       ).then((res) => res.json());
 
+      toast.loading("Signing transaction...");
       const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
       const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
       const signedTransaction = await walletProvider.signTransaction(
         transaction
       );
 
+      toast.loading("Sending transaction...");
       const rawTransaction = signedTransaction.serialize();
       const txid = await connection.sendRawTransaction(rawTransaction, {
         skipPreflight: true,
@@ -165,11 +268,15 @@ export default function Swap() {
         },
         "confirmed"
       );
+      
       setSwapping(false);
       console.log(`https://solscan.io/tx/${txid}`);
       toast.success(
         `Swap transaction successful: https://solscan.io/tx/${txid} `
       );
+      
+      // Update SOL balance after the swap
+      fetchSolBalance();
     } catch (error) {
       console.error("Error in swap transaction:", error);
       toast.error("Error in swap transaction");
@@ -182,22 +289,23 @@ export default function Swap() {
     !toAmount ||
     Number(fromAmount) <= 0 ||
     toAsset?.address === fromAsset?.address ||
-    swapping;
+    swapping ||
+    jitSwapLoading;
 
-  // if (!fromAsset || !toAsset) {
-  //   return <div>Loading...</div>;
-  // }
+  // Format fee for display
+  const formatFee = (fee) => {
+    if (!fee) return "$0.00";
+    
+    // Convert SOL to approximate USD (you can use a real price feed in production)
+    const solPriceInUsd = 20; // Example price, replace with actual price feed
+    const feeInUsd = fee * solPriceInUsd;
+    
+    return `~$${feeInUsd.toFixed(2)}`;
+  };
 
   return (
-    <Card className="w-full  bg-zinc-900 rounded-3xl">
+    <Card className="w-full bg-zinc-900 rounded-3xl">
       <CardContent className="p-3">
-        {/* <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Swap</h2>
-          <Button variant="ghost" size="icon">
-            <Settings2Icon className="h-5 w-5" />
-          </Button>
-        </div> */}
-
         <div className="rounded-2xl bg-zinc-800 p-4 py-6 h-32 mb-2">
           <div className="flex justify-between mb-2">
             <label className="text-sm text-gray-500">You pay</label>
@@ -272,8 +380,16 @@ export default function Swap() {
           </div>
           <div className="flex justify-between text-gray-500">
             <span>Network Fee</span>
-            <span>~$1.50</span>
+            <span>{formatFee(estimatedFee)}</span>
           </div>
+          
+          {/* Display JIT swap notice if needed */}
+          {needsJustInTimeSwap(estimatedFee) && (
+            <div className="mt-2 p-2 bg-blue-900/40 rounded-lg text-xs">
+              <p>You don't have enough SOL for network fees. A small amount of your tokens will be swapped for SOL automatically.</p>
+            </div>
+          )}
+          
           <br className="my-4" />
           {fromAmount && toAmount && Number(fromAmount) > 0 && (
             <div className="flex justify-between font-medium">
@@ -293,7 +409,7 @@ export default function Swap() {
           onClick={signAndSendTransaction}
           disabled={isSwapDisabled}
         >
-          Swap
+          {swapping || jitSwapLoading ? "Processing..." : needsJustInTimeSwap(estimatedFee) ? "Swap (includes fee coverage)" : "Swap"}
         </Button>
       </CardContent>
     </Card>
