@@ -1,3 +1,5 @@
+"use client";
+
 import { useAppKitProvider } from "@reown/appkit/react";
 import { useAppKitConnection, type Provider } from "@reown/appkit-adapter-solana/react";
 import { VersionedTransaction } from "@solana/web3.js";

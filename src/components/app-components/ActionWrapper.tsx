@@ -2,6 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Swap from "./Swap";
 import RampCard from "./Ramp";
+import OffRampCard from "./Offramp";
 
 export default function ActionWrapper() {
   return (
@@ -14,8 +15,11 @@ export default function ActionWrapper() {
           {/* <TabsTrigger value="send" className="text-base rounded-full data-[state=active]:bg-blue-700">
             Send
           </TabsTrigger> */}
-          <TabsTrigger value="ramp" className="text-base rounded-full data-[state=active]:bg-blue-700">
-            Ramp
+          <TabsTrigger value="buy" className="text-base rounded-full data-[state=active]:bg-blue-700">
+            Buy USDC
+          </TabsTrigger>
+          <TabsTrigger value="sell" className="text-base rounded-full data-[state=active]:bg-blue-700">
+            Sell USDC
           </TabsTrigger>
         </TabsList>
 
@@ -23,8 +27,12 @@ export default function ActionWrapper() {
           <Swap />
         </TabsContent>
 
-        <TabsContent value="ramp" className="space-y-4">
+        <TabsContent value="buy" className="space-y-4">
           <RampCard />
+        </TabsContent>
+
+        <TabsContent value="sell" className="space-y-4">
+          <OffRampCard/>
         </TabsContent>
       </Tabs>
     </div>

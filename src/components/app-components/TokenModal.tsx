@@ -77,14 +77,17 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
           className="flex items-center gap-2 px-5 py-2 border bg-zinc-700 rounded-full hover:bg-zinc-600 transition-colors"
         >
           {selectedToken?.logoURI && (
-            <img
-              src={selectedToken?.logoURI}
-              alt={`${selectedToken?.symbol} logo`}
-              className="w-6 h-6 rounded-full"
-              onError={(e) => (e.currentTarget.style.display = "none")}
-            />
+            <span className="flex items-center gap-2">
+              <img
+                src={selectedToken?.logoURI}
+                alt={`${selectedToken?.symbol} logo`}
+                className="w-6 h-6 rounded-full"
+                onError={(e) => (e.currentTarget.style.display = "none")}
+              />
+              <span className="font-medium">{selectedToken?.symbol}</span>
+            </span>
           )}
-          <span className="font-medium">{selectedToken?.symbol}</span>
+
           <ChevronDown className="h-4 w-4 text-gray-500" />
         </Button>
       </DialogTrigger>
@@ -129,7 +132,9 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
                             src={token.logoURI}
                             alt={`${token.symbol} logo`}
                             className="w-6 h-6 rounded-full"
-                            onError={(e) => (e.currentTarget.style.display = "none")}
+                            onError={(e) =>
+                              (e.currentTarget.style.display = "none")
+                            }
                           />
                         ) : (
                           <div className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center">
@@ -141,7 +146,9 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
                       </div>
                       <div className="flex flex-col">
                         <span className="font-medium">{token.symbol}</span>
-                        <span className="text-sm text-gray-500">{token.name}</span>
+                        <span className="text-sm text-gray-500">
+                          {token.name}
+                        </span>
                       </div>
                     </CommandItem>
                   ))}
