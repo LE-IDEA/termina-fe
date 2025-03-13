@@ -6,20 +6,20 @@ const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 
 const HotList = () => {
     const hotlists = [
-        { imgURL: "/Trump.png", name: "dev.fun announcment", author: "devann", id: 1 },
-        { imgURL: "/Trump.png", name: "dev.fun announcment", author: "devann", id: 2 },
-        { imgURL: "/Trump.png", name: "dev.fun announcment", author: "devann", id: 3 },
-        { imgURL: "/Trump.png", name: "dev.fun announcment", author: "devann", id: 4 },
+        { imgURL: "/hispdog.png", name: "dev.fun announcment", author: "devann", id: 1 },
+        { imgURL: "/hispdog.png", name: "dev.fun announcment", author: "devann", id: 2 },
+        { imgURL: "/hispdog.png", name: "dev.fun announcment", author: "devann", id: 3 },
+        { imgURL: "/hispdog.png", name: "dev.fun announcment", author: "devann", id: 4 },
     ]
     return (
-        <div className="flex flex-col gap-[6px] md:min-w-[322px] lg:min-w-[400px] xl:min-w-[480px] rounded-xl">
-            <div className="hidden md:flex md:flex-row md:justify-between md:pr-[6px] md:pl-[6px]">
-                <div className="flex flex-row items-center justify-between">
-                    <h1 className={`${instrumentSerif.className}`}>Recent</h1>
-                    <Image src="/Clock.svg" alt='prev' width={12} height={12} />
+        <div className="flex flex-col gap-[6px] pmd:w-[362px] xl:w-[412px] rounded-xl">
+            <div className="flex flex-row justify-between pr-[6px] pl-[6px]">
+                <div className="flex flex-row items-center gap-1 justify-between">
+                    <h1 className={`${instrumentSerif.className}`}>Watch</h1>
+                    <Image src="/WatchSwap.svg" alt='prev' width={12} height={12} />
                 </div>
-                <h1 className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%] opacity-50`}>
-                    see more
+                <h1 className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%] opacity-50 my-auto`}>
+                    edit
                 </h1>
             </div>
 
@@ -31,8 +31,8 @@ const HotList = () => {
                         <div className="gap-[10px] flex flex-row">
                             <Image src={item.imgURL} alt='Add' width={32} height={32} className="w-[32px] h-[32px]" />
                             <div className="flex flex-col max-w-[162px]">
-                                <h1 className={`${geologica.className} font-normal text-[20px] leading-[20px] tracking-[0%] text-black truncate`}>{item.name}</h1>
-                                <h1 className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%] opacity-50`}>{item.author}</h1>
+                                <h1 className={`${geologica.className} font-normal text-[20px] leading-[20px] md:leading-1 tracking-[0%] text-black truncate`}>{item.name}</h1>
+                                <h1 className={`${geologica.className} font-normal text-[10px] leading-[10px] md:leading-1 tracking-[0%] opacity-50 uppercase`}>{item.author}</h1>
                             </div>
                         </div>
                         <div className="flex flex-col justify-between">

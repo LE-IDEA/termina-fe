@@ -12,14 +12,14 @@ const HotRecent = () => {
     ]
 
     return (
-        <div className="flex flex-col gap-[6px] md:min-w-[322px] xl:min-w-[480px]">
+        <div className="flex flex-col gap-[6px] pmd:w-[362px] xl:w-[412px]"> 
 
-            <div className="hidden md:flex md:flex-row md:justify-between md:pr-[6px] md:pl-[6px]">
-                <div className="flex flex-row items-center justify-between">
+            <div className="flex flex-row justify-between pr-[6px] pl-[6px]">
+                <div className="flex flex-row items-center gap-1 justify-between">
                     <h1 className={`${instrumentSerif.className}`}>Recent</h1>
                     <Image src="/Clock.svg" alt='prev' width={12} height={12} />
                 </div>
-                <h1 className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%] opacity-50`}>
+                <h1 className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%] opacity-50 my-auto`}>
                     see more
                 </h1>
             </div>

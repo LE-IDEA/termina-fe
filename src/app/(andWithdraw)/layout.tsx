@@ -21,7 +21,7 @@ export default async function RootLayout({
       <div className="flex flex-col items-center justify-between gap-12 py-10 sm:py-16 md:py-28 " >
         {children}
 
-        <div className="flex flex-row mx-auto ">
+        <div className="flex flex-row mx-auto gap-3">
           <Image src="/circleDetail.svg" alt='Home' width={12} height={12} />
           <h1 className={`${geologica.className} font-medium text-[8px] leading-[8px] text-center my-auto tracking-[0%]`}>Limited to USDC(USDC) on the Solana(SOL) network</h1>
         </div>
