@@ -15,12 +15,12 @@ const downNavLinks = [
     },
     {
         imgURL: "/DiamondSwap.svg",
-        route: "/",
+        route: "/spot",
         id: 3,
     },
     {
         imgURL: "/WatchSwap.svg",
-        route: "/",
+        route: "/waitlist",
         id: 4,
     }
 ];
