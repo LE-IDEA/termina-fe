@@ -37,7 +37,7 @@ const page = () => {
           {/* add&withdarw */}
           <div className=" gap-[24px] flex flex-col md:flex-row xl:gap-0 lg:justify-between ">
             <BalanceCard />  
-              <HottestCard />
+              {/* <HottestCard /> */}
           </div>
 
           <div className="gap-[24px] flex flex-col md:flex-row ">
