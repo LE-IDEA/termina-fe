@@ -10,8 +10,8 @@ export default function Home() {
       <NavBar />
       <div className="px-6">
         <Hero />
-        <WhyTermina />
-        <GetFamiliar />
+        {/* <WhyTermina />
+        <GetFamiliar /> */}
       </div>
       <Footer />
     </>
