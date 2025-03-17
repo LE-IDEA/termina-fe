@@ -189,16 +189,16 @@ export default function Swap() {
   // }
 
   return (
-    <Card className="w-full">
-      <CardContent className="pt-6">
-        <div className="flex justify-between items-center mb-6">
+    <Card className="w-full  bg-zinc-900 rounded-3xl">
+      <CardContent className="p-3">
+        {/* <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Swap</h2>
           <Button variant="ghost" size="icon">
             <Settings2Icon className="h-5 w-5" />
           </Button>
-        </div>
+        </div> */}
 
-        <div className="rounded-2xl bg-gray-100 p-4 mb-2">
+        <div className="rounded-2xl bg-zinc-800 p-4 py-6 h-32 mb-2">
           <div className="flex justify-between mb-2">
             <label className="text-sm text-gray-500">You pay</label>
             <span className="text-sm text-gray-500">
@@ -212,11 +212,11 @@ export default function Swap() {
           </div>
           <div className="flex gap-2">
             <Input
-              type="number"
+              type="text"
               placeholder="0.0"
               value={fromAmount}
               onChange={handleFromValueChange}
-              className="border-0 bg-transparent text-2xl focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+              className="border-0 bg-transparent text-2xl text-white focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
             />
             <TokenSearchModal
               onSelect={handleFromAssetChange}
@@ -238,10 +238,10 @@ export default function Swap() {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-gray-100 p-4 mt-2">
+        <div className="rounded-2xl bg-zinc-800 p-4 py-6 h-32 mt-2">
           <div className="flex justify-between mb-2">
-            <label className="text-sm text-gray-500">You receive</label>
-            <span className="text-sm text-gray-500">
+            <label className="text-base text-gray-500">You receive</label>
+            <span className="text-base text-gray-500">
               {formatBalance({
                 token: toAsset,
                 balance: balances[toAsset?.address],
@@ -256,7 +256,7 @@ export default function Swap() {
               placeholder="0.0"
               value={toAmount}
               readOnly
-              className="border-0 bg-transparent text-2xl focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+              className="border-0 bg-transparent text-white text-2xl focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
             />
             <TokenSearchModal
               onSelect={handleToAssetChange}
@@ -288,7 +288,7 @@ export default function Swap() {
         </div>
 
         <Button
-          className="w-full bg-zinc-700 mt-4 px-6 py-3 rounded-lg"
+          className="w-full bg-blue-700 mt-4 px-6 py-6 text-white text-lg hover:text-gray-800 hover:text-white rounded-full"
           size="lg"
           onClick={signAndSendTransaction}
           disabled={isSwapDisabled}
