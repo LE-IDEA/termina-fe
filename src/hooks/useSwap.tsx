@@ -1,93 +1,86 @@
-import { useState, useEffect, useCallback } from "react";
-import { useAppKitConnection } from "@reown/appkit-adapter-solana/react";
-import { useAppKitProvider } from "@reown/appkit/react";
+import { useState, useCallback } from "react";
 import { VersionedTransaction } from "@solana/web3.js";
-import useTokens from "@/hooks/useTokens";
-import { useTokenBalances } from "@/hooks/useTokenBalances";
-import { debounce } from "@/utils";
 import toast from "react-hot-toast";
+import debounce from "lodash/debounce";
 
-export function useSwap() {
-  const { connection } = useAppKitConnection();
-  const { walletProvider } = useAppKitProvider("solana");
-  const { tokens } = useTokens();
-  const { balances, balancesLoading } = useTokenBalances();
-
-  // State management
-  const [fromAsset, setFromAsset] = useState(null);
-  const [toAsset, setToAsset] = useState(null);
-  const [fromAmount, setFromAmount] = useState("");
-  const [toAmount, setToAmount] = useState("");
+export function useSwap({ connection, walletProvider }) {
   const [quoteResponse, setQuoteResponse] = useState(null);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [estimatedFee, setEstimatedFee] = useState(0.001);
   const [swapping, setSwapping] = useState(false);
+  const [toAmount, setToAmount] = useState("");
 
-  // Initialize default tokens
-  useEffect(() => {
-    if (tokens && tokens.length >= 2 && !isInitialized) {
-      setFromAsset(tokens[0]);
-      setToAsset(tokens[1]);
-      setIsInitialized(true);
+  // Use environment variable with fallback
+  const SPONSOR_PUBLIC_KEY = process.env.NEXT_PUBLIC_SPONSOR_PUBLIC_KEY || "Gj1tcyr5858jdUNxcqYUMnWJJFy4YpRYsyqf9zLmMQa";
+
+  async function getEstimatedSwapFee(quote) {
+    if (!quote || !connection || !walletProvider?.publicKey) {
+      return 0.001; // Fallback fee
     }
-  }, [tokens, isInitialized]);
+    
+    try {
+      const response = await fetch("https://quote-api.jup.ag/v6/swap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quoteResponse: quote,
+          userPublicKey: walletProvider.publicKey.toString(),
+          wrapAndUnwrapSol: true,
+          computeUnitPriceMicroLamports: 100000,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to estimate swap fee: ${response.status}`);
+      }
+      
+      const data = await response.json();
 
-  // Token selection handlers
-  const handleFromAssetChange = (token) => {
-    if (token) {
-      setFromAsset(token);
-      setFromAmount("");
-      setToAmount("");
+      // Calculate total fee including network and buffer
+      let totalFeeInSol = 0;
+      const networkFee = 0.000005; // Base network fee
+      
+      if (data.priorityFee) {
+        totalFeeInSol += Number(data.priorityFee) / 10 ** 9;
+      }
+      
+      if (data.otherFees && data.otherFees.signatureFee) {
+        totalFeeInSol += Number(data.otherFees.signatureFee) / 10 ** 9;
+      }
+      
+      totalFeeInSol += networkFee;
+      totalFeeInSol *= 1.2; // Add a 20% buffer
+      
+      return Math.max(totalFeeInSol, 0.001); // Ensure minimum fee
+    } catch (error) {
+      console.error("Error estimating swap fee:", error);
+      return 0.001; // Fallback to minimum fee on error
     }
-  };
+  }
 
-  const handleToAssetChange = (token) => {
-    if (token) {
-      setToAsset(token);
-      setFromAmount("");
-      setToAmount("");
-    }
-  };
-
-  // Swap token positions
-  const handleSwapDirection = () => {
-    const tempToken = fromAsset;
-    setFromAsset(toAsset);
-    setToAsset(tempToken);
-
-    const tempAmount = fromAmount;
-    setFromAmount(toAmount);
-    setToAmount(tempAmount);
-  };
-
-  // Input change handler
-  const handleFromValueChange = (event) => {
-    const value = event.target.value;
-    if (value === "" || (!isNaN(Number(value)) && Number(value) >= 0)) {
-      setFromAmount(value);
-    }
-  };
-
-  // Quote fetching logic
-  async function getQuote(currentAmount) {
+  // Get quote for a swap based on input parameters
+  async function getQuote(currentAmount, fromAsset, toAsset) {
     if (!currentAmount || !fromAsset || !toAsset) {
       return;
     }
-
     try {
       const response = await fetch(
-        `https://quote-api.jup.ag/v6/quote?inputMint=${
-          fromAsset.address
-        }&outputMint=${toAsset.address}&amount=${
-          currentAmount * Math.pow(10, fromAsset.decimals)
-        }&slippage=0.5`
+        `https://quote-api.jup.ag/v6/quote?inputMint=${fromAsset.address}&outputMint=${toAsset.address}&amount=${currentAmount * Math.pow(10, fromAsset.decimals)}&slippage=0.5`
       );
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch quote: ${response.status}`);
+      }
+      
       const quote = await response.json();
 
       if (quote && quote.outAmount) {
-        const outAmountNumber =
-          Number(quote.outAmount) / Math.pow(10, toAsset.decimals);
+        const outAmountNumber = Number(quote.outAmount) / Math.pow(10, toAsset.decimals);
         setToAmount(outAmountNumber.toString());
         setQuoteResponse(quote);
+        
+        // Update fee estimate based on quote
+        const fee = await getEstimatedSwapFee(quote);
+        setEstimatedFee(fee);
       }
     } catch (error) {
       console.error("Error fetching quote:", error);
@@ -97,60 +90,98 @@ export function useSwap() {
     }
   }
 
-  // Debounce the quote API call
-  const debounceQuoteCall = useCallback(debounce(getQuote, 500), [
-    fromAsset,
-    toAsset,
-  ]);
+  // Debounce the quote call for performance
+  const debounceQuoteCall = useCallback(
+    debounce((currentAmount, fromAsset, toAsset) => {
+      getQuote(currentAmount, fromAsset, toAsset);
+    }, 500),
+    []
+  );
 
-  // Effect to fetch quote when amount changes
-  useEffect(() => {
-    if (fromAmount && Number(fromAmount) > 0) {
-      debounceQuoteCall(Number(fromAmount));
-    } else {
-      setToAmount("");
-    }
-  }, [fromAmount, debounceQuoteCall]);
-
-  // Transaction execution
-  async function executeSwap() {
+  // Sign and send the swap transaction
+  async function signAndSendTransaction() {
     if (!walletProvider || !connection || !quoteResponse) {
-      console.error("Missing required dependencies for swap");
       toast.error("Missing required dependencies for swap");
-      return;
+      return null;
     }
-
+  
+    if (!SPONSOR_PUBLIC_KEY) {
+      toast.error("Sponsor public key not found");
+      return null;
+    }
+  
+    // Create a toast ID for updating the same toast
+    const toastId = toast.loading("Preparing swap transaction...");
+    setSwapping(true);
+  
     try {
-      setSwapping(true);
-      toast.loading("Swapping...");
-      
-      const { swapTransaction } = await fetch(
-        "https://quote-api.jup.ag/v6/swap",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            quoteResponse,
-            userPublicKey: walletProvider.publicKey?.toString(),
-            wrapAndUnwrapSol: true,
-          }),
+      // 1. Request the swap transaction (with feeAccount set to the sponsor)
+      const swapResponse = await fetch("https://quote-api.jup.ag/v6/swap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quoteResponse,
+          userPublicKey: walletProvider.publicKey.toString(),
+          wrapAndUnwrapSol: true,
+          feeAccount: SPONSOR_PUBLIC_KEY,
+          prioritizationFeeLamports: {
+            priorityLevelWithMaxLamports: {
+                maxLamports: 10000000,
+                global: false,
+                priorityLevel: "veryHigh"
+            }
         }
-      ).then((res) => res.json());
-
-      const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
-      const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
-      const signedTransaction = await walletProvider.signTransaction(
-        transaction
-      );
-
+        }),
+      });
+  
+      if (!swapResponse.ok) {
+        throw new Error(`Failed to create swap transaction: ${swapResponse.status}`);
+      }
+      
+      const swapData = await swapResponse.json();
+      const swapTransaction = swapData.swapTransaction;
+  
+      if (!swapTransaction) {
+        throw new Error("No swap transaction returned");
+      }
+  
+      // 2. Get sponsor signature from backend
+      toast.loading("Sponsoring transaction...", { id: toastId });
+      const sponsorResponse = await fetch("https://octane-server-omega.vercel.app/api/sponsor-transaction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transaction: swapTransaction }),
+      });
+  
+      if (!sponsorResponse.ok) {
+        throw new Error(`Failed to sponsor transaction: ${sponsorResponse.status}`);
+      }
+      
+      const sponsoredData = await sponsorResponse.json();
+  
+      if (!sponsoredData.transaction) {
+        throw new Error("No sponsored transaction returned");
+      }
+  
+      // 3. Deserialize the sponsored transaction
+      toast.loading("Processing transaction...", { id: toastId });
+      const sponsoredTxBuffer = Buffer.from(sponsoredData.transaction, "base64");
+      const transaction = VersionedTransaction.deserialize(sponsoredTxBuffer);
+  
+      // 4. Have the user sign the transaction
+      toast.loading("Signing transaction...", { id: toastId });
+      const signedTransaction = await walletProvider.signTransaction(transaction);
+  
+      // 5. Send the signed transaction
+      toast.loading("Sending transaction...", { id: toastId });
       const rawTransaction = signedTransaction.serialize();
       const txid = await connection.sendRawTransaction(rawTransaction, {
         skipPreflight: true,
-        maxRetries: 2,
+        maxRetries: 3,
       });
-
+  
+      // 6. Confirm the transaction
+      toast.loading("Confirming transaction...", { id: toastId });
       const latestBlockHash = await connection.getLatestBlockhash();
       await connection.confirmTransaction(
         {
@@ -158,54 +189,27 @@ export function useSwap() {
           lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
           signature: txid,
         },
-        "confirmed"
+        "finalized"
       );
-      
+  
+      toast.success(`Swap successful: https://solscan.io/tx/${txid}`, { id: toastId });
       setSwapping(false);
-      toast.success(
-        `Swap transaction successful: https://solscan.io/tx/${txid}`
-      );
       return txid;
     } catch (error) {
-      console.error("Error in swap transaction:", error);
-      toast.error("Error in swap transaction");
+      console.error("Swap error:", error);
+      toast.error(`Swap failed: ${error.message || "Unknown error"}`, { id: toastId });
       setSwapping(false);
       return null;
     }
   }
 
-  // Computed values
-  const isSwapDisabled =
-    !fromAmount ||
-    !toAmount ||
-    Number(fromAmount) <= 0 ||
-    toAsset?.address === fromAsset?.address ||
-    swapping;
-
-  const swapRate = fromAmount && toAmount && Number(fromAmount) > 0
-    ? (Number(toAmount) / Number(fromAmount)).toFixed(6)
-    : null;
-
-  return {
-    // State
-    fromAsset,
-    toAsset,
-    fromAmount,
+  return { 
+    quoteResponse, 
+    estimatedFee, 
+    swapping, 
     toAmount,
-    swapping,
-    balances,
-    balancesLoading,
-    
-    // Handlers
-    handleFromAssetChange,
-    handleToAssetChange,
-    handleFromValueChange,
-    handleSwapDirection,
-    executeSwap,
-    
-    // Computed
-    isSwapDisabled,
-    swapRate,
-    hasWallet: !!walletProvider?.publicKey
+    getQuote,
+    debounceQuoteCall,
+    signAndSendTransaction 
   };
 }

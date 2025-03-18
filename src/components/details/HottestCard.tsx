@@ -10,10 +10,12 @@ const HottestCard = () => {
         { imgURL: "/Trump.png", name: "First Crypto", symbol: "FCP", price: "0.031 SOL", change: "0.20%", mcapImg: "/MCAP.svg", supImg: "/SUP.svg", liqImg: "/LIQ.svg", mcap: "15.5m", supply: "1B", liquidity: "265k" },
         { imgURL: "/Trump.png", name: "First Crypto", symbol: "FCP", price: "0.031 SOL", change: "0.20%", mcapImg: "/MCAP.svg", supImg: "/SUP.svg", liqImg: "/LIQ.svg", mcap: "15.5m", supply: "1B", liquidity: "265k" },
         { imgURL: "/Trump.png", name: "First Crypto", symbol: "FCP", price: "0.031 SOL", change: "0.20%", mcapImg: "/MCAP.svg", supImg: "/SUP.svg", liqImg: "/LIQ.svg", mcap: "15.5m", supply: "1B", liquidity: "265k" },
+        { imgURL: "/Trump.png", name: "First Crypto", symbol: "FCP", price: "0.031 SOL", change: "0.20%", mcapImg: "/MCAP.svg", supImg: "/SUP.svg", liqImg: "/LIQ.svg", mcap: "15.5m", supply: "1B", liquidity: "265k" },
+
     ];
 
     return (
-        <div className="overflow-hidden flex flex-col gap-[6px] md:min-w-[298px]  pmd:w-[362px] xl:w-[412px] md:h-[238px] ">
+        <div className="overflow-hidden flex flex-col gap-[6px] md:w-full md:h-[238px] ">
 
             <div className='flex flex-row'>
                 <h1 className={`font-normal text-[15px] leading-[15px] tracking-[0%] text-center ${instrumentSerif.className}`}>Hottest Daily</h1>

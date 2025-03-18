@@ -14,14 +14,14 @@ import useTokens from "@/hooks/useTokens";
 import { debounce } from "@/utils";
 import TokenSearchModal from "./TokenModal";
 import { formatBalance } from "@/utils/formattedbalances";
-import { useTokenBalances } from "@/hooks/useTokenBalances";
+// import { useTokenBalances } from "@/hooks/useTokenBalances";
 import toast from "react-hot-toast";
 
 export default function Swap() {
   const { connection } = useAppKitConnection();
   const { walletProvider } = useAppKitProvider<Provider>("solana");
   const { tokens } = useTokens();
-  const { balances, balancesLoading } = useTokenBalances();
+  // const { balances, balancesLoading } = useTokenBalances();
 
   // Initialize with null and set after tokens are loaded
   const [fromAsset, setFromAsset] = useState(null);

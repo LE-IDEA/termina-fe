@@ -12,7 +12,7 @@ export function ReownProvider({ children }: { children: React.ReactNode }) {
       wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()]
     });
 
-    const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
+    const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID || "";
 
     const metadata = {
       name: 'AppKit',
@@ -33,6 +33,7 @@ export function ReownProvider({ children }: { children: React.ReactNode }) {
         emailShowWallets: true,
         onramp: false
       },
+      themeMode: 'light'
     });
   }, []); 
 

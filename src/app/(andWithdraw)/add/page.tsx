@@ -140,7 +140,7 @@ const ScalexConverterPage = () => {
   };
 
   return (
-    <div className="flex flex-col gap-3 h-auto rounded-[24px] md:w-[500px] sm:w-[400px]">
+    <div className="flex flex-col gap-3 h-auto rounded-[24px] md:w-[500px] sm:w-[400px] mt-16 md:mt-0">
       <div className="flex flex-row justify-between p-2 rounded-[12px] border-[1px] border-solid">
         <input
           id="Solana address"
@@ -164,7 +164,7 @@ const ScalexConverterPage = () => {
       <div className="flex flex-row justify-between p-2 rounded-[12px] border-[1px] border-solid">
         <input
           id="Email"
-          className={`${geologica.className} font-normal text-[16px] leading-1 tracking-normal outline-none w-full`}
+          className={`${geologica.className} bg-transparent  font-normal text-[16px] leading-1 tracking-normal outline-none w-full`}
           placeholder="Enter your email"
           title="Enter email"
           type="email"
@@ -200,7 +200,7 @@ const ScalexConverterPage = () => {
                 value={isNairaFirst ? naira : dollar}
                 onChange={isNairaFirst ? handleNairaChange : handleDollarChange}
                 id={isNairaFirst ? "naira" : "dollar"}
-                className={`h-[20px] ${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal outline-none`}
+                className={`h-[20px] ${geologica.className} bg-transparent font-normal text-[20px] leading-[20px] tracking-normal outline-none`}
                 placeholder="0.00"
                 title="Enter amount"
                 onFocus={() => setIsInputActive(true)}

@@ -66,10 +66,10 @@ const nextConfig = {
         protocol: "https",
         hostname: `*.genesysgo.net`,
       },
-      // {
-      //   protocol: "https",
-      //   hostname: `*.drift.foundation`,
-      // }
+      {
+        protocol: "https",
+        hostname: `hebbkx1anhila5yf.public.blob.vercel-storage.com`,
+      }
     ],
   },
   webpack: (config) => {
