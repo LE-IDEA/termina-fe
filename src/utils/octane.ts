@@ -1,6 +1,6 @@
 import axios from "axios";
 import base58 from "bs58";
-import {Connection, PublicKey, Transaction} from "@solana/web3.js";
+import {Connection, PublicKey, Transaction, VersionedTransaction} from "@solana/web3.js";
 import {
   createAssociatedTokenAccountInstruction,
   createTransferInstruction,
@@ -50,7 +50,7 @@ export interface BuildWhirlpoolsSwapResponse {
   messageToken: string;
 }
 
-const OCTANE_ENDPOINT = 'https://octane-server-beta.vercel.app/api';
+const OCTANE_ENDPOINT = 'https://octane-server-omega.vercel.app/api';
 
 export async function loadOctaneConfig(): Promise<OctaneConfig> {
   return (await axios.get(OCTANE_ENDPOINT)).data as OctaneConfig;
@@ -63,7 +63,7 @@ export async function createAssociatedTokenAccount(transaction: Transaction): Pr
   return response.signature as string;
 }
 
-export async function sendTransactionWithTokenFee(transaction: Transaction): Promise<string> {
+export async function sendTransactionWithTokenFee(transaction: Transaction | VersionedTransaction): Promise<string> {
   const response = (await axios.post(OCTANE_ENDPOINT + '/transfer', {
     transaction: base58.encode(transaction.serialize({requireAllSignatures: false})),
   })).data;

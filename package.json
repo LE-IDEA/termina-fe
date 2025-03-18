@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@jup-ag/api": "^6.0.40",
+    "@jup-ag/react-hook": "^6.2.0",
     "@project-serum/anchor": "^0.26.0",
     "@radix-ui/react-dialog": "^1.1.5",
     "@radix-ui/react-select": "^2.1.5",
@@ -36,7 +38,8 @@
     "react-dom": "^18",
     "react-hot-toast": "^2.5.1",
     "tailwind-merge": "^2.6.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zustand": "^3.6.9"
   },
   "devDependencies": {
     "@types/node": "^20",
