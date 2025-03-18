@@ -73,7 +73,7 @@ export default function WaitlistForm({
             </div>
             <Button
               type="submit"
-              className="bg-blue-500 text-white rounded-xl text-lg h-11 py-2 font-medium px-6"
+              className="bg-blue-700 text-white rounded-xl text-lg h-11 py-2 font-medium px-6"
             >
               Join Waitlist
             </Button>
@@ -97,7 +97,7 @@ export default function WaitlistForm({
             </div>
             <Button
               type="submit"
-              className="bg-blue-500 text-white rounded-xl text-lg h-11 py-2 font-medium px-6"
+              className="bg-blue-700 text-white rounded-xl text-lg h-11 py-2 font-medium px-6"
             >
               Add Wishlist
             </Button>
@@ -106,7 +106,7 @@ export default function WaitlistForm({
 
         {formState === "done" && (
           <div className="w-full">
-            <Button className="bg-blue-500 w-full text-white rounded-xl text-lg h-10 py-2 font-medium px-6 hover:bg-blue-500">
+            <Button className="bg-blue-700 w-full text-white rounded-xl text-lg h-10 py-2 font-medium px-6 hover:bg-blue-700">
               Thank you for joining!
             </Button>
           </div>
@@ -115,7 +115,7 @@ export default function WaitlistForm({
           <div className="w-full">
             <Button
               type="submit"
-              className="bg-blue-500 text-white rounded-xl w-full text-lg h-10 py-2 font-medium px-6"
+              className="bg-blue-700 text-white rounded-xl w-full text-lg h-10 py-2 font-medium px-6"
               onClick={() => {
                 setFormState("waitlist");
               }}
