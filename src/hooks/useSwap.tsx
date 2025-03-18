@@ -12,6 +12,7 @@ export function useSwap({ connection, walletProvider }) {
   // Use environment variable with fallback
   const SPONSOR_PUBLIC_KEY = process.env.NEXT_PUBLIC_SPONSOR_PUBLIC_KEY || "Gj1tcyr5858jdUNxcqYUMnWJJFy4YpRYsyqf9zLmMQa";
 
+
   async function getEstimatedSwapFee(quote) {
     if (!quote || !connection || !walletProvider?.publicKey) {
       return 0.001; // Fallback fee

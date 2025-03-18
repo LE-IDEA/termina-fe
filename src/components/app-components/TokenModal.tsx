@@ -35,7 +35,6 @@ const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
   subsets: ["latin"],
 });
-const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 
 const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
   onSelect,
