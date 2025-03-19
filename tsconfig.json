@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     "next.config.mjs",
     "src/app/(OnboardingAuth)/(layout.tsx)"
-  ],
+, "src/components/details/Dexscreener.tsx"  ],
   "exclude": ["node_modules"]
 }

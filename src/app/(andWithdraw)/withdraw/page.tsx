@@ -1,7 +1,7 @@
 "use client"
 import Image from "next/image"
 import { Geologica } from "next/font/google";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import BlackResponse from "@/components/details/BlackResponse";
 import RedResponse from "@/components/details/RedResponse";
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
@@ -10,8 +10,8 @@ const page = () => {
     const bankOptions = [
         { name: "Access Bank" }, { name: "First Bank" }, { name: "GT Bank" }, { name: "Zenith Bank" }, { name: "UBA" }
     ]
-    const [isAccount, setIsAccount] = useState(true);
-    const [notAccount, setNotAccount] = useState(true);
+    const [isAccount, setIsAccount] = useState(false);
+    const [notAccount, setNotAccount] = useState(false);
     const [isInputActive, setIsInputActive] = useState(false);
     const [response, setResponse] = useState(false);
     const [blackResponse, redResponse] = useState(true);
@@ -20,6 +20,41 @@ const page = () => {
     const [dollar, setDollar] = useState("");
     const [isNairaFirst, setIsNairaFirst] = useState(true);
     const conversionRate = 1450; // 1 Dollar = 750 Naira
+
+    const [showBankOptions, setShowBankOptions] = useState(false);
+    const [showWarning, setShowWarning] = useState(false);
+    const accountRef = useRef(null);
+
+
+    const handleAccountChange = (e) => {
+        const value = e.target.value;
+
+        if (value.length === 10) {
+            setIsAccount(true);
+            setNotAccount(false);
+            setShowBankOptions(true);
+            setShowWarning(false);
+        } else if (value.length > 0) {
+            setIsAccount(false);
+            setNotAccount(true);
+            setShowBankOptions(false);
+            setShowWarning(true);
+        } else {
+            setIsAccount(false);
+            setNotAccount(false);
+            setShowBankOptions(false);
+            setShowWarning(false);
+        }
+    };
+    const handlePaste = async () => {
+        try {
+            const pastedText = await navigator.clipboard.readText();
+            accountRef.current.value = pastedText;
+            handleAccountChange({ target: accountRef.current });
+        } catch (err) {
+            console.error('Failed to paste:', err);
+        }
+    };
 
     const handleNairaChange = (e) => {
         const nairaValue = e.target.value;
@@ -43,37 +78,39 @@ const page = () => {
 
     return (
         <div className="flex flex-col rounded-[24px] gap-3 md:w-[500px]">
-            <input name="Account Number" id="acct" title="Enter account number" placeholder="10 digit account number" className={` p-[10px]  ${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] border-[0.4px] border-solid  rounded-lg`} />
-            <div className={`flex flex-col rounded-lg ${!isAccount ? 'bg-black' : !notAccount ? 'bg-[#ffcbcb]' : null}`}>
-                <input name="Bank name" id="acct" title="Enter bank name" placeholder="10 digit account number" className={`p-[10px] ${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] border-[0.4px] border-solid  rounded-lg ${!isAccount ? 'border-black' : !notAccount ? 'border-[#ffcbcb]' : null}`} />
-                {
-                    !isAccount ?
-                        <div className="flex flex-col bg-black gap-[12px] rounded-br-[12px] rounded-bl-[12px] p-3" >
-                            {bankOptions.slice(0, 3).map((bank, index) => (
-                                <div key={index} className=" ">
-                                    <h1 className={`${geologica.className} font-medium text-[8px] leading-[8px] tracking-[0% text-white`}>{bank.name}</h1>
-                                </div>
-                            ))}
-                        </div>
-                        : null
-                }
-                {
-                    !notAccount ?
-                        <div className="flex p-[10px] items-center rounded-br-[12px] rounded-bl-[12px] bg-[#ffcbcb] ">
-                            <div className="flex flex-row items-center justify-center gap-[4px] mx-auto">
-                                <Image src="/circleDetaill.svg" alt='warning' width={12} height={12} className="my-auto" />
-                                <h1 className={`${geologica.className} font-medium text-[8px] my-auto leading-[8px] tracking-[0%] text-center text-[#AC1717]`}>Not in our registry</h1>
-                            </div>
-                        </div>
-                        : null
-                }
+            <div className="flex flex-row  p-2 rounded-[12px] border-[1px] border-solid">
+                <input ref={accountRef} name="Account Number" id="acct" title="Enter account number" type="number" placeholder="10 digit account number" className={`${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] hidespin outline-none rounded-lg flex-1`} onChange={handleAccountChange} style={{  MozAppearance: 'textfield', WebkitAppearance: 'none' }} />
+                <Image src="/AddressCopy.svg" alt='pastee' width={20} height={20} className="my-auto" onClick={handlePaste} />
             </div>
+
+            <div className={`flex flex-col rounded-lg ${showBankOptions ? 'bg-black' : showWarning ? 'bg-[#ffcbcb]' : null}`}>
+                <input name="Bank name" id="acct" title="Enter bank name" placeholder="Enter bank name" className={`p-[10px] ${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] border-[0.4px] border-solid  rounded-lg ${showBankOptions ? 'border-black' : showWarning ? 'border-[#ffcbcb]' : null}`} />
+                {showBankOptions && (
+                    <div className="flex flex-col bg-black gap-[12px] rounded-br-[12px] rounded-bl-[12px] p-3" >
+                        {bankOptions.slice(0, 3).map((bank, index) => (
+                            <div key={index} className=" ">
+                                <h1 className={`${geologica.className} font-medium text-[8px] leading-[8px] tracking-[0%] text-white`}>{bank.name}</h1>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {showWarning && (
+                    <div className="flex p-[10px] items-center rounded-br-[12px] rounded-bl-[12px] bg-[#ffcbcb]">
+                        <div className="flex flex-row items-center justify-center gap-[4px] mx-auto">
+                            <Image src="/circleDetaill.svg" alt='warning' width={12} height={12} className="my-auto" />
+                            <h1 className={`${geologica.className} font-medium text-[8px] my-auto leading-[8px] tracking-[0%] text-center text-[#AC1717]`}>
+                                Not in our registry
+                            </h1>
+                        </div>
+                    </div>
+                )}
+            </div> 
 
             <div className={` rounded-[12px] ${response ? blackResponse ? 'bg-black' : 'bg-[#ffcbcb]' : null}`}>
                 <div className={`flex flex-row gap-3 justify-between bg-white p-3 border-[1px] border-solid rounded-[12px] ${response ? blackResponse ? 'border-black' : 'border-[#ffcbcb]' : null}`}>
                     <div className="flex flex-col gap-1.5 ">
                         <div className="flex flex-col gap-1 ">
-                           <label htmlFor={isNairaFirst ? "naira" : "dollar"} className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%]`}>{isNairaFirst ? "NGN" : "USDC"}</label>
+                            <label htmlFor={isNairaFirst ? "naira" : "dollar"} className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%]`}>{isNairaFirst ? "NGN" : "USDC"}</label>
                             <input
 
                                 value={isNairaFirst ? naira : dollar} onChange={isNairaFirst ? handleNairaChange : handleDollarChange}
@@ -105,14 +142,14 @@ const page = () => {
 
 
             </div>
-            {!isAccount ?
+            {isAccount ?
                 <div className={`flex gap-2 px-6 py-3 rounded-[12px] bg-black`} >
                     <h1 className={`m-auto ${geologica.className}  font-normal text-[16px] leading-[19.2px] tracking-normal text-white text-center`}>John Idaku Ifechi</h1>
                 </div> : null
             }
 
             {
-                !notAccount ?
+                notAccount ?
                     <div className={`flex flex-col gap-2 rounded-[12px] bg-[#ffcbcb] items-center `} >
 
                         <div className="flex flex-row  px-6 py-3 gap-[4px] m-auto">

@@ -17,7 +17,7 @@ const page = () => {
   return (
     <div className="overflow-auto hide-scrollbar h-screen">   
 
-      <div className=" flex flex-col w-full md:flex-row md:gap-3 lgg:gap-4 pmd:gap-6 xl:gap-3 pxl:gap-6 pmd:w-[904px] xl:w-[1100px] pxl:max-w-[1300px] px-3 py-6 md:px-2 mdd:px-9 pmd:px-0  mx-auto ">
+      <div className=" flex flex-col md:flex-row md:gap-3 w-full lgg:gap-4 pmd:gap-6 xl:gap-3 pxl:gap-6 pmd:w-[904px] xl:w-[1100px] pxl:max-w-[1300px] px-3 py-6 md:px-2 mdd:px-9 pmd:px-0  mx-auto ">
         <Sidebar />
 
         <div className=" gap-[24px] flex flex-col xl:w-[850px] mb-[200px] md:px-0 mx-auto">

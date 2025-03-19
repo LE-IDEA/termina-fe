@@ -80,5 +80,8 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  hidespin {
+    @apply appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none;
+  }
 
 }

@@ -1,5 +1,6 @@
 import BuySellSet from "@/components/details/BuySellSet";
 import VolMarkers from "@/components/details/VolMarkers";
+import Dexscreener from "@/components/details/Dexscreener";
 import Image from "next/image";
 import { Geologica } from "next/font/google";
 import FirstCrypto from "@/components/details/FirstCrypto";
@@ -33,8 +34,8 @@ const page = () => {
 
 
                 <div className="flex flex-col gap-[12px]">
-                    {/* dexgraph */}
-                    <div className="p-[1/1] h-[171px] md:h-[303px] bg-[#EBEBEB] ">
+                    <div className="p-[1/1] h-[171px] mb-5 md:mb-[0] md:h-[303px] lgg:h-[390px] bg-[#EBEBEB] ">
+                    <Dexscreener />
 
                     </div>
                     <div className="flex flex-col gap-[12px] md:flex-row md:justify-between">

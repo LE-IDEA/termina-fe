@@ -13,7 +13,7 @@ const HottestCard = () => {
     ];
 
     return (
-        <div className="overflow-hidden flex flex-col gap-[6px] md:min-w-[298px]  pmd:w-[362px] xl:w-[412px] md:h-[238px] ">
+        <div className="overflow-hidden flex flex-col gap-[6px]  w-[362px] ssm:w-[460px] sm:w-[572px] md:w-[302px]  pmd:w-[362px] xl:w-[412px] md:h-[238px] "> 
 
             <div className='flex flex-row'>
                 <h1 className={`font-normal text-[15px] leading-[15px] tracking-[0%] text-center ${instrumentSerif.className}`}>Hottest Daily</h1>
@@ -55,20 +55,20 @@ const HottestCard = () => {
                         // </div>
 
                         <div key={index} className="p-[6px] gap-[6px] rounded-[12px] bg-[#ebebeb] flex flex-col md:w-[112px] xl:w-[160px] pmd:gap-0 md:h-[217px] hide-overflow md:justify-between">
-                            <div className="flex flex-col rounded-[12px] gap-[6px] {w-[170px} md:w-full xl:w-full ">
+                            <div className="flex flex-col rounded-[12px] gap-[6px] w-[170px] md:w-full xl:w-full ">
                                 <Image src={card.imgURL} alt='prev' width={170} height={95.38} />
                                 <div className=" flex flex-col  gap-[6px]">
-                                    <h1 className={`${geologica.className} truncate font-medium text-[20px] leading-[20px] tracking-[0%]`}>
+                                    <h1 className={`${geologica.className} truncate font-medium text-[20px] leading-[100%] tracking-[0%]`}>
                                         {card.name}
                                     </h1>
-                                    <div className="gap-[6px] flex flex-row justify-between">
-                                        <h1 className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%] opacity-50`}>{card.symbol}</h1>
-                                        <h1 className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%] opacity-50`}>{card.price}</h1>
-                                        <h1 className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%] text-[#47B105]`}>{card.change}</h1>
+                                    <div className="gap-[6px] md:gap-0 md:justify-between flex flex-row justify-between">
+                                        <h1 className={`${geologica.className} font-normal text-[10px] leading-[100%] tracking-[0%] opacity-50`}>{card.symbol}</h1>
+                                        <h1 className={`${geologica.className} font-normal text-[10px] leading-[100%] tracking-[0%] opacity-50`}>{card.price}</h1>
+                                        <h1 className={`${geologica.className} font-normal text-[10px] leading-[100%] tracking-[0%] text-[#47B105]`}>{card.change}</h1>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex flex-row md:w-full gap-[10px] pt-10 space-x-4 md:overflow-auto hide-scrollbar">
+                            <div className="flex flex-row md:w-full gap-[10px]  space-x-4 md:overflow-auto hide-scrollbar">
 
                                 <div className="flex flex-row  md:gap-1">
                                      <Image src={card.mcapImg} alt='mcap' width={32} height={16} />

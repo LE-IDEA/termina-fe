@@ -12,7 +12,7 @@ const HotRecent = () => {
     ]
 
     return (
-        <div className="flex flex-col gap-[6px] pmd:w-[362px] xl:w-[412px]"> 
+        <div className="flex flex-col gap-[6px] md:w-[302px] pmd:w-[362px] xl:w-[412px]"> 
 
             <div className="flex flex-row justify-between pr-[6px] pl-[6px]">
                 <div className="flex flex-row items-center gap-1 justify-between">
