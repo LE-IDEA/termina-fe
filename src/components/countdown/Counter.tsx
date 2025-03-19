@@ -56,7 +56,7 @@ const CountdownTimer = () => {
       <div className="flex flex-wrap justify-center gap-4 md:gap-6">
         {timeUnits.map((unit) => (
           <div key={unit.label} className="flex flex-col items-center">
-            <div className="bg-black/30 backdrop-blur-sm text-white text-xl sm:text-3xl md:text-4xl font-bold w-14 sm:w-20 md:w-24 h-14 sm:h-20 md:h-24 rounded-lg flex items-center justify-center border border-blue-700/30">
+            <div className="bg-black/30 backdrop-blur-sm text-white text-xl sm:text-3xl md:text-4xl font-bold w-14 sm:w-20 md:w-24 h-14 sm:h-20 md:h-24 rounded-lg flex items-center justify-center">
               {formatNumber(unit.value)}
             </div>
             <span className="text-white text-base mt-2">{unit.label}</span>
