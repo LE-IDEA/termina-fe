@@ -12,7 +12,7 @@ const CountdownTimer = () => {
   
     useEffect(() => {
       const calculateTimeLeft = () => {
-        const deploymentDate = new Date("2025-04-14").getTime()
+        const deploymentDate = new Date("2025-03-25").getTime()
         const now = new Date().getTime()
         const distance = deploymentDate - now
   

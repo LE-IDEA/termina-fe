@@ -66,7 +66,7 @@ export default function CountDownPage() {
 
           <div className="absolute inset-0 pointer-events-none">
             <FloatingImage
-              src="/crypto-logo-1.png"
+              src="/logo-bright.svg"
               alt="Crypto Logo 1"
               width={1000}
               height={1000}
@@ -74,35 +74,35 @@ export default function CountDownPage() {
             />
             <FloatingImage
               src="/pump.png"
-              alt="MetaMask Logo"
+              alt="Pump Logo"
               width={1000}
               height={1000}
               className="absolute top-[8%] right-[18%] w-12 h-12 lg:w-24 md:h-24 text-green-500/20 -rotate-12"
             />
 
             <FloatingImage
-              src="/phantom-logo.png"
+              src="/phantom-logo.svg"
               alt="Phantom Logo"
               width={1000}
               height={1000}
               className="absolute top-[30%] left-[8%] w-12 h-12 lg:w-24 md:h-24 text-green-500/20 rotate-45"
             />
             <FloatingImage
-              src="/TA-logo.png"
+              src="/TA-logo.svg"
               alt="TA Logo"
               width={1000}
               height={1000}
               className="absolute top-[45%] left-[20%] w-12 h-12 lg:w-20 lg:h-20 text-green-500/20 -rotate-12"
             />
             <FloatingImage
-              src="/tw-logo.png"
+              src="/scalex.svg"
               alt="TW Logo"
               width={1000}
               height={1000}
-              className="absolute top-[35%] right-[10%] w-12 h-12 lg:w-24 md:h-24 text-green-500/20 rotate-12"
+              className="absolute top-[35%] rounded-full right-[10%] w-12 h-12 lg:w-24 md:h-24 text-green-500/20 rotate-12"
             />
             <FloatingImage
-              src="/crypto-logo-2.png"
+              src="/solanaLogoMark.svg"
               alt="Crypto Logo 2"
               width={1000}
               height={1000}
@@ -129,7 +129,7 @@ export default function CountDownPage() {
                   className=" w-40 h-40"
                 />
               </div>
-              <div className="bg-black/30 backdrop-blur-sm rounded-lg flex items-center justify-center mb-8 w-fit mx-auto">
+              <div className="bg-gray-950/90 backdrop-blur-sm rounded-lg flex items-center justify-center mb-8 w-fit mx-auto">
                 <p className="mt-6 text-lg lg:text-xl text-white font-bold max-w-md ">
                 Join us at
                 launch to experience the future of decentralized finance.
