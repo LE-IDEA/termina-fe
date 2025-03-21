@@ -5,7 +5,7 @@ import Link from "next/link";
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 
-export default function CreateAccount() {
+export default function ImportAccount() {
     return (
         <>
             <div className="size-full h-screen items-center justify-center bg-black md:p-[24px] p-[48px]">
