@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import useTokens from "@/hooks/useTokens";
 import { debounce } from "@/utils";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Token {
   address?: string;
@@ -44,22 +45,11 @@ const SearchAdd = () => {
     isError,
     error,
   } = useTokens({ search });
-
-  // const [selectedToken, setSelectedToken] = useState<Token>(defaultToken);
-
-  // Update selected token when defaultToken changes
-  // useEffect(() => {
-  //   setSelectedToken(defaultToken);
-  // }, [defaultToken]);
-
-  // Handle token selection
   const handleSelect = (token: Token) => {
-    // setSelectedToken(token);
-    // onSelect(token);
     setOpen(false);
   };
 
-  // Reset search when modal is closed
+
   useEffect(() => {
     if (!open) {
       setSearch("");
@@ -70,14 +60,15 @@ const SearchAdd = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
       <div>
-        <section className="hidden md:flex flex-row w-1/2 gap-3 cursor-pointer">
+        <section className="hidden md:flex flex-row w-full gap-3 cursor-pointer">
           <div className="flex flex-row flex-1 bg-[#ebebeb] p-[12px] gap-3 rounded-[24px]">
             <Image src="/SearchFrame.svg" alt="search" width={28} height={28} />
             <input
               id="search"
-              className={`${geologica.className} bg-[#ebebeb] font-normal text-[20px] leading-1 tracking-normal`}
+              className={`${geologica.className} bg-[#ebebeb] font-normal text-[20px] leading-1 tracking-normal `}
               placeholder="Search"
               title="Search"
+              readOnly
             ></input>
           </div>
         </section>
@@ -107,8 +98,10 @@ const SearchAdd = () => {
                     <CommandItem
                       key={token.address || token.symbol}
                       onSelect={() => handleSelect(token)}
-                      className="flex items-center gap-2 cursor-pointer"
+                      
                     >
+                      <Link href={`/${token.address}`} className=" w-full flex items-center gap-2 cursor-pointer">
+               
                       {token?.logoURI && (
                         <img
                           src={token.logoURI}
@@ -125,6 +118,7 @@ const SearchAdd = () => {
                           {token.name}
                         </span>
                       </div>
+                      </Link>
                     </CommandItem>
                   ))}
                 </CommandGroup>

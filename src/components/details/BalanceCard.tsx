@@ -12,30 +12,33 @@ import CurrencyChange from "./CurrencyChange";
 import { useUserTokenBalance } from "@/hooks/useTokenBalances";
 import { useAppKitAccount } from "@reown/appkit/react";
 import toast from "react-hot-toast";
+import useFungibleTokens from "@/hooks/useFungibleTokes";
 
 const BalanceCard = () => {
   const [isCurr, setIsCurr] = useState(true);
   const { address } = useAppKitAccount();
-  const { totalBalanceUSD, isLoading } = useUserTokenBalance();
+  // const { totalBalanceUSD, isLoading } = useUserTokenBalance();
+  const { fungibleTokens, totalPrice, loading } = useFungibleTokens(address || "");
+  
   const changeCurr = () => {
     setIsCurr(!isCurr);
   };
 
-  const copyToClipBoard = async ()=>{
+  const copyToClipBoard = async () => {
     try {
-        await navigator.clipboard.writeText(`${address}`);
+      await navigator.clipboard.writeText(`${address}`);
 
-        setTimeout(() => {
-       toast.success("Address copied successfully!")
-        }, 1000);
-        
-        return true;
-      } catch (err) {
-        toast.error('Failed to copy balance to clipboard:', err)
-        console.error('Failed to copy balance to clipboard:', err);
-        return false;
-      }
-  }
+      setTimeout(() => {
+        toast.success("Address copied successfully!");
+      }, 1000);
+
+      return true;
+    } catch (err) {
+      toast.error("Failed to copy balance to clipboard:", err);
+      console.error("Failed to copy balance to clipboard:", err);
+      return false;
+    }
+  };
   return (
     <div className="flex flex-col gap-[12px] md:w-full md:justify-between pmd:h-[238px] ">
       {/* <div className='flex flex-col gap-[12px] md:w-full lgg:h-[400px] md:justify-between pmd:h-[238px] '> */}
@@ -45,13 +48,13 @@ const BalanceCard = () => {
             <h1
               className={` ${instrumentSerif.className} font-normal text-[36px] md:leading-1 tracking-[0] text-center text-black`}
             >
-              {isLoading ? "loading..." : totalBalanceUSD}
+              ${loading ? "loading..." : totalPrice.toFixed(2)}
             </h1>
             <div className="flex flex-row">
               <button title="change coin" onClick={changeCurr}>
                 <Image src="/ArrowDown.svg" alt="prev" width={18} height={18} />
               </button>
-              <Image src="/Solana.svg" alt="prev" width={32} height={32} />
+              <Image src="/USDC.png" alt="prev" width={52} height={32} className=" aspect-square" quality={100} />
             </div>
           </div>
           <div className="flex  gap-1 ">
@@ -73,7 +76,14 @@ const BalanceCard = () => {
               String(address).length - 1
             )}
           </h1>
-          <Image src="/Copy.svg" className="cursor-pointer" alt="prev" width={20} height={20} onClick={copyToClipBoard}/>
+          <Image
+            src="/Copy.svg"
+            className="cursor-pointer"
+            alt="prev"
+            width={20}
+            height={20}
+            onClick={copyToClipBoard}
+          />
         </div>
       </div>
 

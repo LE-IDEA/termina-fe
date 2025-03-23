@@ -54,8 +54,8 @@ export const useUserTokenBalance = () => {
           (account) => account.account.data.parsed.info.tokenAmount.uiAmount > 0
         );
 
-        console.log(activeTokenAccounts);
-        console.log(tokenMintAddresses);
+        // console.log(activeTokenAccounts);
+        // console.log(tokenMintAddresses);
 
         // Fetch token metadata for active accounts
         for (const account of tokenAccounts.value) {

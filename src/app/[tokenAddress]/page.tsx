@@ -8,13 +8,23 @@ import FirstCrypto from "@/components/details/FirstCrypto";
 import TopHolds from "@/components/details/TopHolds";
 import SlippageSettings from "@/components/details/SlippageSettings";
 import { useEffect, useRef } from "react";
-// const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
+import useTokenData from "@/hooks/useTokenData";
+import { useParams } from "next/navigation";
+
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
   subsets: ["latin"],
 });
 
 const page = () => {
+  const params = useParams();
+  const { tokenData, analyticsData, loading, error } = useTokenData(
+    params?.tokenAddress
+  );
+  console.log(tokenData);
+  console.log(analyticsData);
+  
+  
   const PRICE_CHART_ID = "price-chart-widget-container";
 
   const containerRef = useRef(null);
@@ -23,11 +33,11 @@ const page = () => {
     if (typeof window === "undefined") return;
 
     const loadWidget = () => {
-      if (typeof window.createMyWidget === "function") {
-        window.createMyWidget(PRICE_CHART_ID, {
+      if (typeof window?.createMyWidget === "function") {
+        window?.createMyWidget(PRICE_CHART_ID, {
           autoSize: true,
           chainId: "solana",
-          tokenAddress: "3T721bpRc5FNY84W36vWffxoKs4FLXhBpSaqwUCRpump",
+          tokenAddress: `${params?.tokenAddress}`,
           defaultInterval: "1D",
           timeZone:
             Intl.DateTimeFormat().resolvedOptions().timeZone ?? "Etc/UTC",
@@ -82,7 +92,7 @@ const page = () => {
 
         <div className="flex flex-col gap-[12px]">
           {/* dexgraph */}
-          <div className="p-[1/1] h-[171px] md:h-[303px] bg-[#EBEBEB] ">
+          <div className="p-[1/1] h-full md:h-[400px] bg-[#EBEBEB] ">
             <div style={{ width: "100%", height: "100%" }}>
               <div
                 id={PRICE_CHART_ID}
@@ -96,12 +106,13 @@ const page = () => {
               <h1
                 className={`${geologica.className} font-medium text-[20px] leading-[20px] tracking-[0%]`}
               >
-                First Crypto President
+                {tokenData?.name}
               </h1>
               <h1
                 className={`${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] opacity-50`}
               >
-                $FCP
+        
+                {tokenData?.symbol}
               </h1>
             </div>
             <div className="flex flex-row gap-[6px] md:gap-[6px] justify-between">

@@ -16,9 +16,12 @@ const page = () => {
   return (
     <main className="">
       <div className="max-w-7xl gap-[24px] flex flex-col mb-[200px] px-8 mx-auto mt-8">
-        <div className="flex justify-between">
+        <div className="flex w-full justify-between">
           {" "}
-          <SearchAdd /> <appkit-button />
+          <div className="flex-initial">
+            <SearchAdd />
+          </div>{" "}
+          <appkit-button />
         </div>
 
         <div className="flex flex-row justify-between md:hidden">
