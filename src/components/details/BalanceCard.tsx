@@ -9,7 +9,6 @@ const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 import { useState } from "react";
 import Link from "next/link";
 import CurrencyChange from "./CurrencyChange";
-import { useUserTokenBalance } from "@/hooks/useTokenBalances";
 import { useAppKitAccount } from "@reown/appkit/react";
 import toast from "react-hot-toast";
 import useFungibleTokens from "@/hooks/useFungibleTokes";

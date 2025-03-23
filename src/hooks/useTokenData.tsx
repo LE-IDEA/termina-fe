@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { Pool } from "@/types/jupTokens";
 
 const useTokenData = (mintAddress: string) => {
   const [tokenData, setTokenData] = useState<any>(null);
-  const [analyticsData, setAnalyticsData] = useState<any>(null);
-  const [pairsData, setPairsData] = useState<any>(null);
+  const [analyticsData, setAnalyticsData] = useState<Pool>();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  //TODO: Add relevant types
   useEffect(() => {
     if (!mintAddress) return;
 
@@ -16,42 +18,23 @@ const useTokenData = (mintAddress: string) => {
         setLoading(true);
 
         // Fetch token details from Jupiter API
+        const analyticsResponse = await axios.get(
+          `https://datapi.jup.ag/v1/pools?assetIds=${mintAddress}`,
+          { headers: { Accept: "application/json" } }
+        );
+
         const jupiterResponse = await axios.get(
           `https://api.jup.ag/tokens/v1/token/${mintAddress}`,
           { headers: { Accept: "application/json" } }
         );
 
-        // Fetch token analytics from Moralis API
-        const analyticsResponse = await fetch(
-          `https://deep-index.moralis.io/api/v2.2/tokens/${mintAddress}/analytics?chain=solana`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-              "X-API-Key":`${process.env.NEXT_PUBLIC_MORALIS_API}`,
-            },
-          }
-        );
-
-        // Fetch token pairs from Moralis API
-        const pairsResponse = await fetch(
-          `https://solana-gateway.moralis.io/token/mainnet/${mintAddress}/pairs`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-              "X-API-Key":`${process.env.NEXT_PUBLIC_MORALIS_API}`,
-            },
-          }
-        );
 
         const tokenDetails = await jupiterResponse.data;
-        const analytics = await analyticsResponse.json();
-        const pairs = await pairsResponse.json();
+        const analytics = await analyticsResponse.data?.pools[0];
 
         setTokenData(tokenDetails);
         setAnalyticsData(analytics);
-        setPairsData(pairs);
+        // setPairsData(pairs?.pairs[9]);
       } catch (err) {
         setError("Failed to fetch token data");
       } finally {
@@ -62,7 +45,7 @@ const useTokenData = (mintAddress: string) => {
     fetchTokenData();
   }, [mintAddress]);
 
-  return { tokenData, analyticsData, pairsData, loading, error };
+  return { tokenData, analyticsData, loading, error };
 };
 
 export default useTokenData;

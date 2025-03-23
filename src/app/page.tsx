@@ -18,7 +18,7 @@ const page = () => {
       <div className="max-w-7xl gap-[24px] flex flex-col mb-[200px] px-8 mx-auto mt-8">
         <div className="flex w-full justify-between">
           {" "}
-          <div className="flex-initial">
+          <div className="flex">
             <SearchAdd />
           </div>{" "}
           <appkit-button />

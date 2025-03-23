@@ -3,6 +3,7 @@
 import { Geologica, Instrument_Serif } from "next/font/google";
 import { useState, useEffect } from "react";
 import { Pool } from "@/types/jupTokens";
+import Link from "next/link";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
@@ -19,7 +20,6 @@ const HottestCard = () => {
       try {
         const response = await fetch(
           //   "https://datapi.jup.ag/v1/pools/toptraded/5m"
-
           "https://datapi.jup.ag/v1/pools/popular/1h"
         );
         const data = await response.json();
@@ -51,6 +51,7 @@ const HottestCard = () => {
           <p>Loading...</p>
         ) : (
           tokens.map((token, index) => (
+            <Link key={token.id} href={`/${token.baseAsset.id}`}>
             <div
               key={index}
               className=" gap-2 rounded-[12px] bg-[#ebebeb] flex flex-col hide-overflow md:justify-between"
@@ -78,7 +79,7 @@ const HottestCard = () => {
                   </span>
                   <div className="gap-2 flex flex-row flex-wrap justify-between text-[12px]">
                     <span className="font-medium">
-                      ${token.baseAsset.usdPrice.toFixed(4)}
+                      ${token.baseAsset?.usdPrice?.toFixed(4)}
                     </span>
                     <span
                       className={`
@@ -89,12 +90,13 @@ const HottestCard = () => {
                       }
                          font-bold" `}
                     >
-                      {token.baseAsset.stats1h.priceChange.toFixed(2)}%
+                      {token.baseAsset.stats1h?.priceChange?.toFixed(2)}%
                     </span>
                   </div>
                 </div>
               </div>
             </div>
+            </Link>
           ))
         )}
       </div>
