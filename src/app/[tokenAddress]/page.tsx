@@ -7,71 +7,33 @@ import { Geologica } from "next/font/google";
 import FirstCrypto from "@/components/details/FirstCrypto";
 import TopHolds from "@/components/details/TopHolds";
 import SlippageSettings from "@/components/details/SlippageSettings";
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import useTokenData from "@/hooks/useTokenData";
 import { useParams } from "next/navigation";
+import SimpleChartComponentWithMoralis from "@/components/charts/SimpleChartComponentWithMolaris";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
   subsets: ["latin"],
 });
 
-const page = () => {
+// Define the timeframe type to ensure type safety
+type TimeframeType = '1H' | '1D' | '1W' | '1M';
+
+const Page = () => {
   const params = useParams();
-  const { tokenData, analyticsData, loading, error } = useTokenData(
-    params?.tokenAddress
-  );
+  const tokenAddress = typeof params?.tokenAddress === 'string' ? params.tokenAddress : '';
+  
+  const { tokenData, analyticsData, loading, error } = useTokenData(tokenAddress);
+  const [timeframe, setTimeframe] = useState<TimeframeType>('1D');
+  
+  // Type-safe function to handle timeframe changes
+  const handleTimeframeChange = (newTimeframe: TimeframeType) => {
+    setTimeframe(newTimeframe);
+  };
+  
   console.log(tokenData);
   console.log(analyticsData);
-  
-  
-  const PRICE_CHART_ID = "price-chart-widget-container";
-
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const loadWidget = () => {
-      if (typeof window?.createMyWidget === "function") {
-        window?.createMyWidget(PRICE_CHART_ID, {
-          autoSize: true,
-          chainId: "solana",
-          tokenAddress: `${params?.tokenAddress}`,
-          defaultInterval: "1D",
-          timeZone:
-            Intl.DateTimeFormat().resolvedOptions().timeZone ?? "Etc/UTC",
-          theme: "moralis",
-          locale: "en",
-          backgroundColor: "#071321",
-          gridColor: "#0d2035",
-          textColor: "#68738D",
-          candleUpColor: "#4CE666",
-          candleDownColor: "#E64C4C",
-          hideLeftToolbar: false,
-          hideTopToolbar: false,
-          hideBottomToolbar: false,
-        });
-      } else {
-        console.error("createMyWidget function is not defined.");
-      }
-    };
-
-    if (!document.getElementById("moralis-chart-widget")) {
-      const script = document.createElement("script");
-      script.id = "moralis-chart-widget";
-      script.src = "https://moralis.com/static/embed/chart.js";
-      script.type = "text/javascript";
-      script.async = true;
-      script.onload = loadWidget;
-      script.onerror = () => {
-        console.error("Failed to load the chart widget script.");
-      };
-      document.body.appendChild(script);
-    } else {
-      loadWidget();
-    }
-  }, []);
 
   return (
     <div className="items-center relative justify-center p-4 ssm:px-8 sm:px-16  md:px-4 mdd:px-8 mddd:px-16 lgg:px-24 ">
@@ -91,16 +53,35 @@ const page = () => {
         </div>
 
         <div className="flex flex-col gap-[12px]">
-          {/* dexgraph */}
-          <div className="p-[1/1] h-full md:h-[400px] bg-[#EBEBEB] ">
-            <div style={{ width: "100%", height: "100%" }}>
-              <div
-                id={PRICE_CHART_ID}
-                ref={containerRef}
-                style={{ width: "100%", height: "100%" }}
-              />
-            </div>
+          {/* Simple chart component with Moralis integration */}
+          <div className="p-[1/1] h-full md:h-[400px]">
+            <SimpleChartComponentWithMoralis 
+              tokenAddress={tokenAddress} 
+              timeframe={timeframe}
+              backgroundColor="#FFFFFF"
+              lineColorUp="#4CE666"
+              lineColorDown="#E64C4C"
+              height="400px"
+            />
           </div>
+          
+          {/* Timeframe selector - type-safe version */}
+          <div className="flex flex-row gap-2 justify-start">
+            {(['1H', '1D', '1W', '1M'] as const).map((tf) => (
+              <button
+                key={tf}
+                onClick={() => handleTimeframeChange(tf)}
+                className={`px-3 py-1 rounded-lg text-sm ${
+                  timeframe === tf 
+                    ? 'bg-black text-white' 
+                    : 'bg-[#EBEBEB] text-gray-700'
+                }`}
+              >
+                {tf}
+              </button>
+            ))}
+          </div>
+          
           <div className="flex flex-col gap-[12px] md:flex-row md:justify-between">
             <div className="flex flex-col gap-[12px]">
               <h1
@@ -111,7 +92,6 @@ const page = () => {
               <h1
                 className={`${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] opacity-50`}
               >
-        
                 {tokenData?.symbol}
               </h1>
             </div>
@@ -163,7 +143,6 @@ const page = () => {
               <div className="flex flex-row gap-[18px] md:gap-9">
                 <div className="flex flex-row gap-[3px]">
                   <div className=" bg-black p-1 rounded-[6px]">
-                    {/* text-[20px] font-normal md;leading-[1] uppercase tracking-[0] align-middle */}
                     <h1
                       className={`${geologica.className} font-normal text-[12px] lg:text-[20px] leading-[12px] lg:leading-[1] tracking-[0%] text-white`}
                     >
@@ -238,4 +217,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
