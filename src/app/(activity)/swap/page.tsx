@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "@/components/details/Sidebar";
 import DownNav from "@/components/details/DownNav";
 import { useAppKitConnection } from "@reown/appkit-adapter-solana/react";
-import { useAppKitProvider } from "@reown/appkit/react";
+import { Token, useAppKitProvider } from "@reown/appkit/react";
 
 import useTokens from "@/hooks/useTokens";
 import TokenSearchModal from "@/components/app-components/TokenModal";
@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import { useSolBalance } from "@/hooks/useSolBalance";
 import { useSwap } from "@/hooks/useSwap";
 import { Input } from "@/components/ui/input";
+import SearchAdd from "@/components/details/SearchAdd";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
@@ -29,14 +30,14 @@ const SwapPage = () => {
 //   const { balances, balancesLoading } = useTokenBalances();
 
   // Local state for token selection and amounts
-  const [fromAsset, setFromAsset] = useState(null);
-  const [toAsset, setToAsset] = useState(null);
+  const [fromAsset, setFromAsset] = useState<Token>();
+  const [toAsset, setToAsset] = useState<Token>();;
   const [fromAmount, setFromAmount] = useState("");
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Sol balance hook to update balance post-swap
   const { fetchSolBalance } = useSolBalance({
-    connection,
+    connection: connection || null,
     publicKey: walletProvider?.publicKey || null,
   });
 
@@ -147,10 +148,13 @@ const SwapPage = () => {
 
   return (
     <main className="max-w-7xl gap-[24px] flex flex-col mb-[200px] px-8 mx-auto mt-8">
-      <div className="flex justify-end">
-        {" "}
-        <appkit-button />
-      </div>
+      <div className="flex w-full justify-between">
+          {" "}
+          <div className="flex">
+            <SearchAdd />
+          </div>{" "}
+          <appkit-button />
+        </div>
       <section className="md:flex md:flex-row md:gap-4 pxl:gap-6 mx-auto mt-8">
         <section className="gap-4 flex flex-col lgg:w-[444px] pxl:w-[604px]">
           {/* solanabox */}
@@ -270,7 +274,6 @@ const SwapPage = () => {
 
           {/* Network fee display */}
           <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
-            <Image src="/Devanin.svg" alt="Devanin" width={40} height={40} />
             <div className="h-[23px]">
               <h1
                 className={`${geologica.className} text-black font-medium text-base leading-[22.5px] tracking-normal`}

@@ -7,7 +7,7 @@ const geologica = Geologica({
 });
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 import HottestCard from "@/components/details/HottestCard";
-import HotList from "@/components/details/HotList";
+import HotList from "@/components/details/MyTokens";
 import HotRecent from "@/components/details/HotRecent";
 import SearchAdd from "@/components/details/SearchAdd";
 import BalanceCard from "@/components/details/BalanceCard";
