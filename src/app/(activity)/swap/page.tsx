@@ -3,10 +3,9 @@ import Image from "next/image";
 import { Geologica, Instrument_Serif } from "next/font/google";
 import SwapSlippage from "@/components/details/SwapSlippage";
 import { useState, useEffect } from "react";
-import Sidebar from "@/components/details/Sidebar";
-import DownNav from "@/components/details/DownNav";
-import { useAppKitConnection } from "@reown/appkit-adapter-solana/react";
-import { Token, useAppKitProvider } from "@reown/appkit/react";
+
+import { useAppKitConnection, type Provider } from "@reown/appkit-adapter-solana/react";
+import { useAppKitProvider } from "@reown/appkit/react";
 
 import useTokens from "@/hooks/useTokens";
 import TokenSearchModal from "@/components/app-components/TokenModal";
@@ -22,10 +21,16 @@ const geologica = Geologica({
   subsets: ["latin"],
 });
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
+interface Token {
+  address?: string;
+  symbol: string;
+  name: string;
+  logoURI?: string;
+}
 
 const SwapPage = () => {
   const { connection } = useAppKitConnection();
-  const { walletProvider } = useAppKitProvider("solana");
+  const { walletProvider } = useAppKitProvider<Provider>('solana')
   const { tokens } = useTokens();
 //   const { balances, balancesLoading } = useTokenBalances();
 
@@ -38,7 +43,7 @@ const SwapPage = () => {
   // Sol balance hook to update balance post-swap
   const { fetchSolBalance } = useSolBalance({
     connection: connection || null,
-    publicKey: walletProvider?.publicKey || null,
+    publicKey: walletProvider?.publicKey || null
   });
 
   // Use the useSwap hook
@@ -58,9 +63,20 @@ const SwapPage = () => {
   // Initialize tokens when available
   useEffect(() => {
     if (tokens && tokens.length >= 2 && !isInitialized) {
-      setFromAsset(tokens[0]);
-      setToAsset(tokens[1]);
-      setIsInitialized(true);
+      // Ensure tokens have required address property before setting
+      const validFromToken = tokens[0].address ? tokens[0] : undefined;
+      const validToToken = tokens[1].address ? tokens[1] : undefined;
+      if (validFromToken && validToToken) {
+        setFromAsset({
+          ...validFromToken,
+          address: validFromToken.address || ''
+        });
+        setToAsset({
+          ...validToToken, 
+          address: validToToken.address || ''
+        });
+        setIsInitialized(true);
+      }
     }
   }, [tokens, isInitialized]);
 

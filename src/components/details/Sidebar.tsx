@@ -19,7 +19,7 @@ const Sidebar = () => {
 
       {
         downNavLinks.map((item) => {
-          const isActive = pathname === item.route || pathname.startsWith(`${item.route}/`);
+          const isActive = pathname === item.route || pathname?.startsWith(`${item.route}/`);
           return (
               <a href={item.route} key={item.id} className="  ">
                 <div className="flex flex-row gap-3  justify-between">

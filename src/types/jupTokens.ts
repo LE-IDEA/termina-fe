@@ -1,4 +1,5 @@
 export interface Pool {
+    audit: any;
     id: string;
     chain: string;
     dex: string;
@@ -12,6 +13,7 @@ export interface Pool {
   }
   
   export interface BaseAsset {
+    dev?: string;
     id: string;
     name: string;
     symbol: string;
