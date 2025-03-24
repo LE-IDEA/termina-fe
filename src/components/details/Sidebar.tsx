@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 const Sidebar = () => {
   const pathname = usePathname();
   const downNavLinks = [ 
-    { imgURL: "/HomeSwap.svg", route: "/spot", id: 2, name: "Home"},
+    { imgURL: "", route: "/spot", id: 2, name: "Home"},
     { imgURL: "/SwapSwap.svg", route: "/swap", id: 3, name: "Swap" },
     { imgURL: "/DiamondSwap.svg", route: "/spot", id: 4, name: "Spot"},
     { imgURL: "/WatchSwap.svg", route: "/waitlist", id: 5, name: "Watchlist"},
