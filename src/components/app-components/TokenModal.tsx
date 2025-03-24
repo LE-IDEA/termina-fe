@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ChevronDown } from "lucide-react";
+import { Geologica, Instrument_Serif } from "next/font/google";
 import {
   Dialog,
   DialogContent,
@@ -24,12 +24,18 @@ interface Token {
   symbol: string;
   name: string;
   logoURI?: string;
+  decimals?:number
 }
 
 interface TokenSearchModalProps {
   onSelect: (token: Token) => void;
-  defaultToken: Token;
+  defaultToken: Token | undefined;
 }
+
+const geologica = Geologica({
+  weight: ["300", "400", "500", "600"],
+  subsets: ["latin"],
+});
 
 const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
   onSelect,
@@ -47,7 +53,9 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
     error,
   } = useTokens({ search });
 
-  const [selectedToken, setSelectedToken] = useState<Token>(defaultToken);
+  const [selectedToken, setSelectedToken] = useState<Token | undefined>(defaultToken);
+
+  
 
   // Update selected token when defaultToken changes
   useEffect(() => {
@@ -79,27 +87,34 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="flex items-center gap-2 px-5 py-2 bg-white hover:bg-gray-50 border rounded-lg"
-        >
+        <span className="flex gap-6 items-center mb-4 cursor-pointer" border-0>
           {selectedToken?.logoURI && (
             <img
               src={selectedToken?.logoURI}
               alt={`${selectedToken?.symbol} logo`}
-              className="w-6 h-6 rounded-full"
+              className="w-12 h-12 rounded-xl"
               onError={(e) => (e.currentTarget.style.display = "none")}
             />
           )}
-          <span className="font-medium">{selectedToken?.symbol}</span>
-          <ChevronDown className="h-4 w-4 text-gray-500" />
-        </Button>
+          <div className="flex flex-col gap-1 my-auto">
+            <p
+              className={`${geologica.className} font-medium text-[20px]  tracking-normal`}
+            >
+              {selectedToken?.name || "Select"}
+            </p>
+            <p
+              className={`${geologica.className} font-normal text-[10px]  tracking-normal opacity-50`}
+            >
+              {selectedToken?.symbol || ""}
+            </p>
+          </div>
+        </span>
       </DialogTrigger>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Select Token</DialogTitle>
         </DialogHeader>
-        <Command className="rounded-lg">
+        <Command className="rounded-2xl">
           <CommandInput
             placeholder="Search token name or symbol..."
             onValueChange={setSearch}
@@ -108,7 +123,9 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
             {isLoading ? (
               <CommandEmpty>Loading tokens...</CommandEmpty>
             ) : isError ? (
-              <CommandEmpty>Error loading tokens: {error?.message}</CommandEmpty>
+              <CommandEmpty>
+                Error loading tokens: {error?.message}
+              </CommandEmpty>
             ) : (
               <>
                 <CommandGroup>
@@ -123,12 +140,16 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
                           src={token.logoURI}
                           alt={`${token.symbol} logo`}
                           className="w-6 h-6 rounded-full"
-                          onError={(e) => (e.currentTarget.style.display = "none")}
+                          onError={(e) =>
+                            (e.currentTarget.style.display = "none")
+                          }
                         />
                       )}
                       <div className="flex flex-col">
                         <span className="font-medium">{token.symbol}</span>
-                        <span className="text-sm text-gray-500">{token.name}</span>
+                        <span className="text-sm text-gray-500">
+                          {token.name}
+                        </span>
                       </div>
                     </CommandItem>
                   ))}

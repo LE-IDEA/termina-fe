@@ -1,9 +1,11 @@
 // utils/formatters.ts
 type Token = {
-    address: string;
-    decimals: number;
-    symbol: string;
-  };
+  address?: string;
+  symbol: string;
+  name: string;
+  logoURI?: string;
+  decimals?:number
+}
   
   interface FormatBalanceOptions {
     token: Token | null;
@@ -24,7 +26,7 @@ type Token = {
     if (!token || isLoading) return "Loading...";
     if (!isWalletConnected) return "Connect wallet";
   
-    const formattedBalance = balance / Math.pow(10, token.decimals);
+    const formattedBalance = balance / Math.pow(10, token.decimals || 9);
     
     return `Balance: ${formattedBalance.toLocaleString(undefined, {
       minimumFractionDigits: 0,

@@ -18,7 +18,7 @@ const MobileNav = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute w-11/12 mx-auto top-[90px] left-0 right-0 bg-white border-b rounded-b-[36px] shadow-md p-4 space-y-4">
+        <div className="absolute w-full top-[90px] left-0 right-0 bg-white border-b rounded-b-[36px] shadow-md p-4 space-y-4">
           <Link
             href="/"
             className="block py-2 font-medium hover:text-blue-600"

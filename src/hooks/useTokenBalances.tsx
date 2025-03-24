@@ -54,7 +54,7 @@ export function useTokenBalances() {
 
     getBalances();
 
-    if (isConnected) {
+    if (isConnected && connection && address) {
       getBalances();
       connection.onAccountChange(
         new PublicKey(address),

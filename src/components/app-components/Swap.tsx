@@ -8,14 +8,29 @@ import { VersionedTransaction } from "@solana/web3.js";
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
-import { ArrowUpDown, Settings2Icon } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Input } from "../ui/input";
 import useTokens from "@/hooks/useTokens";
 import { debounce } from "@/utils";
 import TokenSearchModal from "./TokenModal";
 import { formatBalance } from "@/utils/formattedbalances";
-import { useTokenBalances } from "@/hooks/useTokenBalances";
+
 import toast from "react-hot-toast";
+import { useTokenBalances } from "@/hooks/useTokenBalances";
+
+// Define the Token interface based on how it's used in the component
+interface Token {
+  address?: string;
+  symbol: string;
+  name: string;
+  logoURI?: string;
+  decimals?:number
+}
+
+interface QuoteResponse {
+  outAmount: string;
+  // Add other properties as needed
+}
 
 export default function Swap() {
   const { connection } = useAppKitConnection();
@@ -23,12 +38,12 @@ export default function Swap() {
   const { tokens } = useTokens();
   const { balances, balancesLoading } = useTokenBalances();
 
-  // Initialize with null and set after tokens are loaded
-  const [fromAsset, setFromAsset] = useState(null);
-  const [toAsset, setToAsset] = useState(null);
+  // Initialize with proper types
+  const [fromAsset, setFromAsset] = useState<Token | null>(null);
+  const [toAsset, setToAsset] = useState<Token | null>(null);
   const [fromAmount, setFromAmount] = useState("");
   const [toAmount, setToAmount] = useState("");
-  const [quoteResponse, setQuoteResponse] = useState(null);
+  const [quoteResponse, setQuoteResponse] = useState<QuoteResponse | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [swapping, setSwapping] = useState(false);
 
@@ -40,7 +55,7 @@ export default function Swap() {
     }
   }, [tokens, isInitialized]);
 
-  const handleFromAssetChange = (token) => {
+  const handleFromAssetChange = (token: Token) => {
     if (token) {
       setFromAsset(token);
       setFromAmount("");
@@ -48,7 +63,7 @@ export default function Swap() {
     }
   };
 
-  const handleToAssetChange = (token) => {
+  const handleToAssetChange = (token: Token) => {
     if (token) {
       setToAsset(token);
       setFromAmount("");
@@ -88,14 +103,14 @@ export default function Swap() {
         `https://quote-api.jup.ag/v6/quote?inputMint=${
           fromAsset.address
         }&outputMint=${toAsset.address}&amount=${
-          currentAmount * Math.pow(10, fromAsset.decimals)
+          currentAmount * Math.pow(10, fromAsset.decimals ||9)
         }&slippage=0.5`
       );
       const quote = await response.json();
 
       if (quote && quote.outAmount) {
         const outAmountNumber =
-          Number(quote.outAmount) / Math.pow(10, toAsset.decimals);
+          Number(quote.outAmount) / Math.pow(10, toAsset.decimals ||9);
         setToAmount(outAmountNumber.toString());
         setQuoteResponse(quote);
       }
@@ -181,7 +196,7 @@ export default function Swap() {
     !fromAmount ||
     !toAmount ||
     Number(fromAmount) <= 0 ||
-    toAsset?.address === fromAsset?.address ||
+    (fromAsset && toAsset && toAsset.address === fromAsset.address) ||
     swapping;
 
   // if (!fromAsset || !toAsset) {
@@ -189,22 +204,22 @@ export default function Swap() {
   // }
 
   return (
-    <Card className="w-full">
-      <CardContent className="pt-6">
-        <div className="flex justify-between items-center mb-6">
+    <Card className="w-full  bg-zinc-900 rounded-3xl">
+      <CardContent className="p-3">
+        {/* <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Swap</h2>
           <Button variant="ghost" size="icon">
             <Settings2Icon className="h-5 w-5" />
           </Button>
-        </div>
+        </div> */}
 
-        <div className="rounded-2xl bg-gray-100 p-4 mb-2">
+        <div className="rounded-2xl bg-zinc-800 p-4 py-6 h-32 mb-2">
           <div className="flex justify-between mb-2">
             <label className="text-sm text-gray-500">You pay</label>
             <span className="text-sm text-gray-500">
               {formatBalance({
                 token: fromAsset,
-                balance: balances[fromAsset?.address],
+                balance: fromAsset && fromAsset.address ? balances[fromAsset.address] : undefined,
                 isLoading: balancesLoading,
                 isWalletConnected: !!walletProvider?.publicKey,
               })}{" "}
@@ -212,15 +227,15 @@ export default function Swap() {
           </div>
           <div className="flex gap-2">
             <Input
-              type="number"
+              type="text"
               placeholder="0.0"
               value={fromAmount}
               onChange={handleFromValueChange}
-              className="border-0 bg-transparent text-2xl focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+              className="border-0 bg-transparent text-2xl text-white focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
             />
             <TokenSearchModal
               onSelect={handleFromAssetChange}
-              defaultToken={fromAsset}
+              defaultToken={fromAsset || undefined}
             />
           </div>
         </div>
@@ -238,13 +253,13 @@ export default function Swap() {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-gray-100 p-4 mt-2">
+        <div className="rounded-2xl bg-zinc-800 p-4 py-6 h-32 mt-2">
           <div className="flex justify-between mb-2">
-            <label className="text-sm text-gray-500">You receive</label>
-            <span className="text-sm text-gray-500">
+            <label className="text-base text-gray-500">You receive</label>
+            <span className="text-base text-gray-500">
               {formatBalance({
                 token: toAsset,
-                balance: balances[toAsset?.address],
+                balance: toAsset && toAsset.address ? balances[toAsset.address] : undefined,
                 isLoading: balancesLoading,
                 isWalletConnected: !!walletProvider?.publicKey,
               })}{" "}
@@ -256,11 +271,11 @@ export default function Swap() {
               placeholder="0.0"
               value={toAmount}
               readOnly
-              className="border-0 bg-transparent text-2xl focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+              className="border-0 bg-transparent text-white text-2xl focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
             />
             <TokenSearchModal
               onSelect={handleToAssetChange}
-              defaultToken={toAsset}
+              defaultToken={toAsset || undefined}
             />
           </div>
         </div>
@@ -275,7 +290,7 @@ export default function Swap() {
             <span>~$1.50</span>
           </div>
           <br className="my-4" />
-          {fromAmount && toAmount && Number(fromAmount) > 0 && (
+          {fromAmount && toAmount && Number(fromAmount) > 0 && fromAsset && toAsset && (
             <div className="flex justify-between font-medium">
               <span>Rate</span>
               <span>
@@ -288,7 +303,7 @@ export default function Swap() {
         </div>
 
         <Button
-          className="w-full bg-zinc-700 mt-4 px-6 py-3 rounded-lg"
+          className="w-full bg-blue-700 mt-4 px-6 py-6 text-white text-lg hover:text-gray-800 hover:text-white rounded-full"
           size="lg"
           onClick={signAndSendTransaction}
           disabled={isSwapDisabled}
