@@ -24,11 +24,12 @@ interface Token {
   symbol: string;
   name: string;
   logoURI?: string;
+  decimals?:number
 }
 
 interface TokenSearchModalProps {
   onSelect: (token: Token) => void;
-  defaultToken: Token;
+  defaultToken: Token | undefined;
 }
 
 const geologica = Geologica({
@@ -52,7 +53,7 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
     error,
   } = useTokens({ search });
 
-  const [selectedToken, setSelectedToken] = useState<Token>(defaultToken);
+  const [selectedToken, setSelectedToken] = useState<Token | undefined>(defaultToken);
 
   
 
