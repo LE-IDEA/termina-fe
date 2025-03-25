@@ -10,7 +10,7 @@ import SlippageSettings from "@/components/details/SlippageSettings";
 import { useState } from "react";
 import useTokenData from "@/hooks/useTokenData";
 import { useParams } from "next/navigation";
-import SimpleChartComponentWithMoralis from "@/components/charts/SimpleChartComponentWithMolaris";
+import FixedChartWithMarketCap from "@/components/charts/FixedChartWithMarketCap";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
@@ -55,14 +55,18 @@ const Page = () => {
         <div className="flex flex-col gap-[12px]">
           {/* Simple chart component with Moralis integration */}
           <div className="p-[1/1] h-full md:h-[400px]">
-            <SimpleChartComponentWithMoralis 
-              tokenAddress={tokenAddress} 
+            <FixedChartWithMarketCap 
+              tokenAddress={tokenAddress}
+              marketCap={tokenData?.marketCap || 175000} // Use actual market cap from token data
+              priceChangePercent={tokenData?.priceChange24h} // Pass the 24h price change percentage if available
               timeframe={timeframe}
               backgroundColor="#FFFFFF"
               lineColorUp="#4CE666"
               lineColorDown="#E64C4C"
               height="400px"
             />
+
+
           </div>
           
           {/* Timeframe selector - type-safe version */}
