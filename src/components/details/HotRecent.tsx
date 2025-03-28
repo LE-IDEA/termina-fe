@@ -63,7 +63,7 @@ const HotRecent = () => {
           <Link href={`/${token.baseAsset.id}`} key={token.id}>
             <div className="p-[12px] rounded-[18px] bg-[#ebebeb] flex flex-row justify-between">
               <div className="flex flex-row gap-[10px]">
-                <Image
+                <img
                   src={token.baseAsset?.icon || "/default-token.svg"}
                   alt={token.baseAsset?.name}
                   width={32}

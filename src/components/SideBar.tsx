@@ -21,7 +21,7 @@ export default function Sidebar() {
     { imgURL: "/HomeSwap.svg", route: "/", id: 2, name: "Home" },
     { imgURL: "/SwapSwap.svg", route: "/swap", id: 3, name: "Swap" },
     { imgURL: "/DiamondSwap.svg", route: "/spot", id: 4, name: "Spot" },
-    { imgURL: "/WatchSwap.svg", route: "/waitlist", id: 5, name: "Watchlist" },
+    { imgURL: "/WatchSwap.svg", route: "/watchlist", id: 5, name: "Watchlist" },
     // { imgURL: "/UserFrame.svg", route: "/", id: 6, name: "Settings" },
   ];
 

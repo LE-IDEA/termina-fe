@@ -19,7 +19,6 @@ const HottestCard = () => {
     const fetchTokens = async () => {
       try {
         const response = await fetch(
-          //   "https://datapi.jup.ag/v1/pools/toptraded/5m"
           "https://datapi.jup.ag/v1/pools/popular/1h"
         );
         const data = await response.json();

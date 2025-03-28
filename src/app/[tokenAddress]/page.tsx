@@ -78,7 +78,9 @@ const page = () => {
     <div className="items-center relative justify-center p-4 ssm:px-8 sm:px-16  md:px-4 mdd:px-8 mddd:px-16 lgg:px-24 ">
       <div className="flex flex-col gap-[24px] mx-auto md:max-w-[730px] mdd:max-w-[750px] lg:max-w-[852px] xl:max-w-[920px] 2xl:max-w-[980px]">
         <div className="flex flex-row h-[36px] justify-between">
-          <Image src="/prevCarret.svg" alt="prev" width={36} height={36} />
+          <Image src="/prevCarret.svg" className="cursor-pointer" alt="prev" width={36} height={36}
+            onClick={() => window.history.back()}
+          />
           <div className="flex flex-row justify-between h-[36px] p-[6px] rounded-xl bg-[#EBEBEB]">
             <Image src="/glasses.svg" alt="watchout" width={24} height={24} />
             <div className="p-[6px]">
@@ -155,7 +157,7 @@ const page = () => {
             </div>
           </div>
           <div className="flex flex-col md:flex-row gap-[24px] md:gap-8 items-center mt-8 rounded-[18px]">
-            <div className=" flex flex-col p-[12px] gap-[24px] bg-[#ebebeb] lg:p-[18px] rounded-[18px]">
+            <div className="w-full md:w-fit flex flex-col p-[12px] gap-[24px] bg-[#ebebeb] lg:p-[18px] rounded-[18px]">
               <div className=" h-[38px] gap-[4px] flex flex-col">
                 <h1
                   className={`${geologica.className} font-normal text-[24px] leading-[24px] lg:leading-[1] lg:text-[32px] tracking-[0%]`}
