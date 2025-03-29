@@ -165,12 +165,11 @@ export function useSwap({ connection, walletProvider }) {
           userPublicKey: walletProvider.publicKey.toString(),
           wrapAndUnwrapSol: true,
           feeAccount: SPONSOR_PUBLIC_KEY,
-          // Set priority for the transaction
           prioritizationFeeLamports: {
             priorityLevelWithMaxLamports: {
-              maxLamports: 10000000, // 0.01 SOL max priority fee
+              maxLamports: 10000000,
               global: false,
-              priorityLevel: "veryHigh"
+              priorityLevel: "high"
             }
           }
         }),
@@ -246,7 +245,6 @@ export function useSwap({ connection, walletProvider }) {
           "confirmed" // "finalized" can take much longer
         );
         
-        // Check if we need to wait for finalization
         const confirmation = await connection.getSignatureStatus(txid);
         if (confirmation.value?.confirmationStatus !== "finalized") {
           toast.loading("Waiting for finalization...", { id: toastId });
@@ -254,13 +252,11 @@ export function useSwap({ connection, walletProvider }) {
         }
       } catch (confirmError) {
         console.warn("Error during confirmation, transaction might still succeed:", confirmError);
-        // We don't throw here, as the transaction might still be valid
       }
   
-      toast.success(`Swap successful!`, { id: toastId, duration: 5000 });
+      toast.success(`Swap successful! Tx ID: ${txid}`, { id: toastId, duration: 5000 });
       setSwapping(false);
       
-      // Reset quote after successful swap
       setQuoteResponse(null);
       setToAmount("");
       

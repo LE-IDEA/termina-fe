@@ -11,6 +11,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Pool } from "@/types/jupTokens";
 import { formatNumber } from "@/utils";
+import Swap from "@/components/app-components/Swap";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
@@ -227,7 +228,8 @@ const page = () => {
               </div>
             </div>
 
-            <BuySellSet />
+            <BuySellSet analyticsData={analyticsData as Pool}/>
+            {/* <Swap/> */}
           </div>
           <VolMarkers analyticsData={analyticsData as Pool} />
 
