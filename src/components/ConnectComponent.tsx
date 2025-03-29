@@ -1,4 +1,4 @@
-
+// @ts-nocheck
 
 "use client";
 
@@ -28,7 +28,7 @@ export default function ConnectButton() {
         </Button>
       ) : (
         <div>
-           return React.createElement("appkit-button", {});
+          <appkit-button />
         </div>
       )}
     </>

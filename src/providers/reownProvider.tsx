@@ -15,9 +15,9 @@ export function ReownProvider({ children }: { children: React.ReactNode }) {
     const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID || "";
 
     const metadata = {
-      name: 'AppKit',
-      description: 'AppKit Solana Example',
-      url: process.env.NEXT_PUBLIC_APP_URL || 'https://example.com',
+      name: 'Termina',
+      description: 'Gas abstraction with improved UI for degening experience.',
+      url: process.env.NEXT_PUBLIC_APP_URL || 'https://termina.fun',
       icons: ['https://avatars.githubusercontent.com/u/179229932']
     };
 
