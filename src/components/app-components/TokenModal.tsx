@@ -97,6 +97,7 @@ const TokenModal: React.FC<TokenSearchModalProps> = ({
       {/* Trigger Button/Display */}
       <DialogTrigger asChild>
         <span className="flex gap-6 items-center mb-4 cursor-pointer" >
+
           {selectedToken?.logoURI && (
             <img
               src={selectedToken?.logoURI}
