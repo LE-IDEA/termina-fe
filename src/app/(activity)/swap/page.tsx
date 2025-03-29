@@ -17,8 +17,9 @@ import { useSolBalance } from "@/hooks/useSolBalance";
 import { useSwap } from "@/hooks/useSwap";
 import { Input } from "@/components/ui/input";
 import SearchAdd from "@/components/details/SearchAdd";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ConnectButton from "@/components/ConnectComponent";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
@@ -42,11 +43,19 @@ const SwapPage = () => {
   const { walletProvider } = useAppKitProvider<Provider>("solana");
   const { tokens } = useTokens();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  // Get token address from URL params if available
-  const tokenAddress = searchParams?.get("token") || null;
-  const action = searchParams?.get("action") || null; // 'buy' or 'sell'
+  // State for URL parameters
+  const [tokenAddress, setTokenAddress] = useState<string | null>(null);
+  const [action, setAction] = useState<string | null>(null);
+
+  // Get token address and action from URL params
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      setTokenAddress(params.get("token") || null);
+      setAction(params.get("action") || null);
+    }
+  }, []);
 
   // Local state for token selection and amounts
   const [fromAsset, setFromAsset] = useState<Token | undefined>();
@@ -63,15 +72,19 @@ const SwapPage = () => {
   ]);
 
   // Helper function to fetch token by address directly from API
-  const fetchTokenByAddress = async (address: string): Promise<Token | undefined> => {
+  const fetchTokenByAddress = async (
+    address: string
+  ): Promise<Token | undefined> => {
     try {
-      const tokenInfoResponse = await (await fetch(`https://api.jup.ag/tokens/v1/token/${address}`)).json();
+      const tokenInfoResponse = await (
+        await fetch(`https://api.jup.ag/tokens/v1/token/${address}`)
+      ).json();
       if (tokenInfoResponse) {
         return {
           address: tokenInfoResponse.address || address,
           symbol: tokenInfoResponse.symbol || "Unknown",
           name: tokenInfoResponse.name || "Unknown Token",
-          logoURI: tokenInfoResponse.logoURI
+          logoURI: tokenInfoResponse.logoURI,
         };
       }
       return undefined;
@@ -101,11 +114,10 @@ const SwapPage = () => {
     walletProvider,
   });
 
-
   // Initialize tokens including the one from URL if provided
   useEffect(() => {
     const initializeTokens = async () => {
-      if ( isInitialized) {
+      if (isInitialized) {
         return;
       }
 
@@ -133,8 +145,10 @@ const SwapPage = () => {
         // Fallback to default tokens if not found
         if (!validFromToken || !validToToken) {
           // Only set these if props weren't provided
-          if (!fromAsset) validFromToken = tokens[0].address ? tokens[0] : undefined;
-          if (!toAsset) validToToken = tokens[1].address ? tokens[1] : undefined;
+          if (!fromAsset)
+            validFromToken = tokens[0].address ? tokens[0] : undefined;
+          if (!toAsset)
+            validToToken = tokens[1].address ? tokens[1] : undefined;
         }
 
         if (validFromToken && validToToken) {
@@ -236,14 +250,14 @@ const SwapPage = () => {
 
   // Popular token addresses mapping
   const popularTokenAddresses = {
-    "SOL": "So11111111111111111111111111111111111111112",
-    "USDC": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-    "USDT": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
-    "RAY": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
-    "JUP": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
-    "BONK": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
-    "WIF": "WifyKcxtrJrQF8aaWrzJwGYL4p8CpZjtUwWGjsR5wRz",
-    "PYTH": "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3"
+    SOL: "So11111111111111111111111111111111111111112",
+    USDC: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    USDT: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+    RAY: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+    JUP: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    BONK: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+    WIF: "WifyKcxtrJrQF8aaWrzJwGYL4p8CpZjtUwWGjsR5wRz",
+    PYTH: "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3",
   };
 
   // Helper function to get address by symbol
@@ -255,15 +269,17 @@ const SwapPage = () => {
   const handlePopularTokenSelect = async (symbol: string) => {
     const address = getAddressBySymbol(symbol);
     if (!address) return;
-    
+
     // Try to find in local tokens first
-    let token = tokens?.find(t => t.address?.toLowerCase() === address.toLowerCase());
-    
+    let token = tokens?.find(
+      (t) => t.address?.toLowerCase() === address.toLowerCase()
+    );
+
     // If not found, fetch from API
     if (!token) {
       token = await fetchTokenByAddress(address);
     }
-    
+
     if (!token) return;
 
     // If this token is already the "to" asset, swap direction
@@ -282,7 +298,7 @@ const SwapPage = () => {
         <div className="flex">
           <SearchAdd />
         </div>
-        <appkit-button />
+        <ConnectButton />
       </div>
       <section className="md:flex md:flex-row md:gap-4 pxl:gap-6 mx-auto mt-8">
         <section className="gap-4 flex flex-col lgg:w-[444px] pxl:w-[604px]">
@@ -418,20 +434,23 @@ const SwapPage = () => {
             </div>
           )}
 
-          {
-            transactionID && (
-              <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
+          {transactionID && (
+            <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
               <div className="h-[23px]">
                 <h1
                   className={`${geologica.className} font-medium text-base leading-[22.5px] tracking-normal`}
                 >
-                Tx : <Link target="blank" href={`https://solscan.io/tx/${transactionID}`}>https://solscan.io/tx/${transactionID.slice(0,10)}</Link>
+                  Tx :{" "}
+                  <Link
+                    target="blank"
+                    href={`https://solscan.io/tx/${transactionID}`}
+                  >
+                    https://solscan.io/tx/${transactionID.slice(0, 10)}
+                  </Link>
                 </h1>
               </div>
             </div>
-            )
-          }
-     
+          )}
         </section>
 
         <SwapSlippage />
