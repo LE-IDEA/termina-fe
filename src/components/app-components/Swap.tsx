@@ -18,29 +18,31 @@ import { formatBalance } from "@/utils/formattedbalances";
 import toast from "react-hot-toast";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 
-// Define the Token interface based on how it's used in the component
 interface Token {
   address?: string;
   symbol: string;
   name: string;
   logoURI?: string;
-  decimals?:number
+  decimals?: number;
 }
 
 interface QuoteResponse {
   outAmount: string;
-  // Add other properties as needed
 }
 
-export default function Swap() {
+interface SwapProps {
+  initialFromAsset?: Token;
+  initialToAsset?: Token;
+}
+
+export default function Swap({ initialFromAsset, initialToAsset }: SwapProps) {
   const { connection } = useAppKitConnection();
   const { walletProvider } = useAppKitProvider<Provider>("solana");
   const { tokens } = useTokens();
   const { balances, balancesLoading } = useTokenBalances();
 
-  // Initialize with proper types
-  const [fromAsset, setFromAsset] = useState<Token | null>(null);
-  const [toAsset, setToAsset] = useState<Token | null>(null);
+  const [fromAsset, setFromAsset] = useState<Token | null>(initialFromAsset || null);
+  const [toAsset, setToAsset] = useState<Token | null>(initialToAsset || null);
   const [fromAmount, setFromAmount] = useState("");
   const [toAmount, setToAmount] = useState("");
   const [quoteResponse, setQuoteResponse] = useState<QuoteResponse | null>(null);
@@ -49,11 +51,21 @@ export default function Swap() {
 
   useEffect(() => {
     if (tokens && tokens.length >= 2 && !isInitialized) {
-      setFromAsset(tokens[0]);
-      setToAsset(tokens[1]);
+      if (!fromAsset) setFromAsset(tokens[0]);
+      if (!toAsset) setToAsset(tokens[1]);
       setIsInitialized(true);
     }
-  }, [tokens, isInitialized]);
+  }, [tokens, isInitialized, fromAsset, toAsset]);
+
+  // Update assets if props change
+  useEffect(() => {
+    if (initialFromAsset) {
+      setFromAsset(initialFromAsset);
+    }
+    if (initialToAsset) {
+      setToAsset(initialToAsset);
+    }
+  }, [initialFromAsset, initialToAsset]);
 
   const handleFromAssetChange = (token: Token) => {
     if (token) {
@@ -103,14 +115,14 @@ export default function Swap() {
         `https://quote-api.jup.ag/v6/quote?inputMint=${
           fromAsset.address
         }&outputMint=${toAsset.address}&amount=${
-          currentAmount * Math.pow(10, fromAsset.decimals ||9)
+          currentAmount * Math.pow(10, fromAsset.decimals || 9)
         }&slippage=0.5`
       );
       const quote = await response.json();
 
       if (quote && quote.outAmount) {
         const outAmountNumber =
-          Number(quote.outAmount) / Math.pow(10, toAsset.decimals ||9);
+          Number(quote.outAmount) / Math.pow(10, toAsset.decimals || 9);
         setToAmount(outAmountNumber.toString());
         setQuoteResponse(quote);
       }
@@ -199,20 +211,9 @@ export default function Swap() {
     (fromAsset && toAsset && toAsset.address === fromAsset.address) ||
     swapping;
 
-  // if (!fromAsset || !toAsset) {
-  //   return <div>Loading...</div>;
-  // }
-
   return (
-    <Card className="w-full  bg-zinc-900 rounded-3xl">
+    <Card className="w-full bg-zinc-900 rounded-3xl">
       <CardContent className="p-3">
-        {/* <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Swap</h2>
-          <Button variant="ghost" size="icon">
-            <Settings2Icon className="h-5 w-5" />
-          </Button>
-        </div> */}
-
         <div className="rounded-2xl bg-zinc-800 p-4 py-6 h-32 mb-2">
           <div className="flex justify-between mb-2">
             <label className="text-sm text-gray-500">You pay</label>

@@ -18,7 +18,6 @@ import {
 import { Button } from "@/components/ui/button";
 import useTokens from "@/hooks/useTokens";
 
-// Token interface definition
 interface Token {
   address?: string;
   mint?: string;
@@ -44,7 +43,6 @@ const TokenModal: React.FC<TokenSearchModalProps> = ({
   onSelect,
   defaultToken,
 }) => {
-  // State management
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedToken, setSelectedToken] = useState<Token | undefined>(defaultToken);
@@ -61,6 +59,7 @@ const TokenModal: React.FC<TokenSearchModalProps> = ({
   } = useTokens({ 
     search: "",
   });
+  
 
   // Filtered tokens based on search input
   const filteredTokens = useMemo(() => {
@@ -97,7 +96,8 @@ const TokenModal: React.FC<TokenSearchModalProps> = ({
     <Dialog open={open} onOpenChange={setOpen}>
       {/* Trigger Button/Display */}
       <DialogTrigger asChild>
-        <span className="flex gap-6 items-center mb-4 cursor-pointer" border-0>
+        <span className="flex gap-6 items-center mb-4 cursor-pointer" >
+
           {selectedToken?.logoURI && (
             <img
               src={selectedToken?.logoURI}

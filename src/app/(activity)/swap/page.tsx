@@ -4,17 +4,21 @@ import { Geologica, Instrument_Serif } from "next/font/google";
 import SwapSlippage from "@/components/details/SwapSlippage";
 import { useState, useEffect } from "react";
 
-import { useAppKitConnection, type Provider } from "@reown/appkit-adapter-solana/react";
+import {
+  useAppKitConnection,
+  type Provider,
+} from "@reown/appkit-adapter-solana/react";
 import { useAppKitProvider } from "@reown/appkit/react";
 
 import useTokens from "@/hooks/useTokens";
 import TokenSearchModal from "@/components/app-components/TokenModal";
-// import { useTokenBalances } from "@/hooks/useTokenBalances";
 import toast from "react-hot-toast";
 import { useSolBalance } from "@/hooks/useSolBalance";
 import { useSwap } from "@/hooks/useSwap";
 import { Input } from "@/components/ui/input";
 import SearchAdd from "@/components/details/SearchAdd";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
@@ -28,22 +32,59 @@ interface Token {
   logoURI?: string;
 }
 
+interface SwapPageProps {
+  initialFromAsset?: Token;
+  initialToAsset?: Token;
+}
+
 const SwapPage = () => {
   const { connection } = useAppKitConnection();
-  const { walletProvider } = useAppKitProvider<Provider>('solana')
+  const { walletProvider } = useAppKitProvider<Provider>("solana");
   const { tokens } = useTokens();
-//   const { balances, balancesLoading } = useTokenBalances();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Get token address from URL params if available
+  const tokenAddress = searchParams?.get("token") || null;
+  const action = searchParams?.get("action") || null; // 'buy' or 'sell'
 
   // Local state for token selection and amounts
-  const [fromAsset, setFromAsset] = useState<Token>();
-  const [toAsset, setToAsset] = useState<Token>();;
+  const [fromAsset, setFromAsset] = useState<Token | undefined>();
+  const [toAsset, setToAsset] = useState<Token | undefined>();
   const [fromAmount, setFromAmount] = useState("");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [transactionID, setTransactionID] = useState<string | null>(null);
+  const [popularTokens, setPopularTokens] = useState<string[]>([
+    "SOL",
+    "USDC",
+    "RAY",
+    "JUP",
+    "BONK",
+  ]);
+
+  // Helper function to fetch token by address directly from API
+  const fetchTokenByAddress = async (address: string): Promise<Token | undefined> => {
+    try {
+      const tokenInfoResponse = await (await fetch(`https://api.jup.ag/tokens/v1/token/${address}`)).json();
+      if (tokenInfoResponse) {
+        return {
+          address: tokenInfoResponse.address || address,
+          symbol: tokenInfoResponse.symbol || "Unknown",
+          name: tokenInfoResponse.name || "Unknown Token",
+          logoURI: tokenInfoResponse.logoURI
+        };
+      }
+      return undefined;
+    } catch (error) {
+      console.error("Error fetching token info:", error);
+      return undefined;
+    }
+  };
 
   // Sol balance hook to update balance post-swap
   const { fetchSolBalance } = useSolBalance({
     connection: connection || null,
-    publicKey: walletProvider?.publicKey || null
+    publicKey: walletProvider?.publicKey || null,
   });
 
   // Use the useSwap hook
@@ -60,25 +101,58 @@ const SwapPage = () => {
     walletProvider,
   });
 
-  // Initialize tokens when available
+
+  // Initialize tokens including the one from URL if provided
   useEffect(() => {
-    if (tokens && tokens.length >= 2 && !isInitialized) {
-      // Ensure tokens have required address property before setting
-      const validFromToken = tokens[0].address ? tokens[0] : undefined;
-      const validToToken = tokens[1].address ? tokens[1] : undefined;
-      if (validFromToken && validToToken) {
-        setFromAsset({
-          ...validFromToken,
-          address: validFromToken.address || ''
-        });
-        setToAsset({
-          ...validToToken, 
-          address: validToToken.address || ''
-        });
-        setIsInitialized(true);
+    const initializeTokens = async () => {
+      if ( isInitialized) {
+        return;
       }
-    }
-  }, [tokens, isInitialized]);
+
+      if (tokens && tokens.length >= 2 && !isInitialized) {
+        let validFromToken: Token | undefined;
+        let validToToken: Token | undefined;
+
+        // If token address provided in URL, fetch it directly
+        if (tokenAddress) {
+          const specifiedToken = await fetchTokenByAddress(tokenAddress);
+
+          if (specifiedToken) {
+            if (action === "sell") {
+              validFromToken = specifiedToken;
+              validToToken = tokens[1];
+            }
+            // Default or 'buy' action, set the specified token as toAsset
+            else {
+              validFromToken = tokens[0];
+              validToToken = specifiedToken;
+            }
+          }
+        }
+
+        // Fallback to default tokens if not found
+        if (!validFromToken || !validToToken) {
+          // Only set these if props weren't provided
+          if (!fromAsset) validFromToken = tokens[0].address ? tokens[0] : undefined;
+          if (!toAsset) validToToken = tokens[1].address ? tokens[1] : undefined;
+        }
+
+        if (validFromToken && validToToken) {
+          setFromAsset({
+            ...validFromToken,
+            address: validFromToken.address || "",
+          });
+          setToAsset({
+            ...validToToken,
+            address: validToToken.address || "",
+          });
+          setIsInitialized(true);
+        }
+      }
+    };
+
+    initializeTokens();
+  }, [tokens, isInitialized, tokenAddress, action, fromAsset, toAsset]);
 
   const handleFromAssetChange = (token) => {
     if (token) {
@@ -123,14 +197,12 @@ const SwapPage = () => {
       return;
     }
 
-    try {
-      const txid = await signAndSendTransaction();
-      if (txid) {
-        fetchSolBalance(); // Update SOL balance post-swap
-      }
-    } catch (error) {
-      // Error is already handled inside signAndSendTransaction
-      console.error("Swap execution error:", error);
+    const txid = await signAndSendTransaction();
+
+    if (txid) {
+      fetchSolBalance();
+      setTransactionID(txid);
+      setFromAmount("");
     }
   }
 
@@ -162,17 +234,76 @@ const SwapPage = () => {
       ? (Number(toAmount) / Number(fromAmount)).toFixed(6)
       : null;
 
+  // Popular token addresses mapping
+  const popularTokenAddresses = {
+    "SOL": "So11111111111111111111111111111111111111112",
+    "USDC": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "USDT": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+    "RAY": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+    "JUP": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    "BONK": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+    "WIF": "WifyKcxtrJrQF8aaWrzJwGYL4p8CpZjtUwWGjsR5wRz",
+    "PYTH": "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3"
+  };
+
+  // Helper function to get address by symbol
+  const getAddressBySymbol = (symbol: string): string | undefined => {
+    return popularTokenAddresses[symbol];
+  };
+
+  // Function to handle popular token selection
+  const handlePopularTokenSelect = async (symbol: string) => {
+    const address = getAddressBySymbol(symbol);
+    if (!address) return;
+    
+    // Try to find in local tokens first
+    let token = tokens?.find(t => t.address?.toLowerCase() === address.toLowerCase());
+    
+    // If not found, fetch from API
+    if (!token) {
+      token = await fetchTokenByAddress(address);
+    }
+    
+    if (!token) return;
+
+    // If this token is already the "to" asset, swap direction
+    if (toAsset?.symbol === symbol) {
+      handleSwapDirection();
+    }
+    // Otherwise set it as the "from" asset
+    else if (fromAsset?.symbol !== symbol) {
+      handleFromAssetChange(token);
+    }
+  };
+
   return (
     <main className="max-w-7xl gap-[24px] flex flex-col mb-[200px] px-8 mx-auto mt-8">
       <div className="flex w-full justify-between">
-          {" "}
-          <div className="flex">
-            <SearchAdd />
-          </div>{" "}
-          <appkit-button />
+        <div className="flex">
+          <SearchAdd />
         </div>
+        <appkit-button />
+      </div>
       <section className="md:flex md:flex-row md:gap-4 pxl:gap-6 mx-auto mt-8">
         <section className="gap-4 flex flex-col lgg:w-[444px] pxl:w-[604px]">
+          <div className="flex flex-row gap-2 mb-2 flex-wrap">
+            {popularTokens.map((symbol) => (
+              <button
+                key={symbol}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  fromAsset?.symbol === symbol
+                    ? "bg-blue-500 text-white"
+                    : toAsset?.symbol === symbol
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200"
+                }`}
+                onClick={() => handlePopularTokenSelect(symbol)}
+              >
+                {symbol}
+              </button>
+            ))}
+          </div>
+
           {/* solanabox */}
           <section className="flex flex-col gap-[6px] rounded-[12px] p-[2px] bg-[#ebebeb] border-[#ebebeb] md:w-[320px] lgg:w-[444px] pxl:w-[604px]">
             {/* From token */}
@@ -277,7 +408,6 @@ const SwapPage = () => {
           {/* Rate display when available */}
           {swapRate && (
             <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
-              <Image src="/Devanin.svg" alt="Rate" width={40} height={40} />
               <div className="h-[23px]">
                 <h1
                   className={`${geologica.className} text-black font-medium text-base leading-[22.5px] tracking-normal`}
@@ -288,17 +418,20 @@ const SwapPage = () => {
             </div>
           )}
 
-          {/* Network fee display */}
-          <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
-            <div className="h-[23px]">
-              <h1
-                className={`${geologica.className} text-black font-medium text-base leading-[22.5px] tracking-normal`}
-              >
-                Network Fee: {estimatedFee.toFixed(5)} SOL (
-                {formatFee(estimatedFee)})
-              </h1>
+          {
+            transactionID && (
+              <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
+              <div className="h-[23px]">
+                <h1
+                  className={`${geologica.className} font-medium text-base leading-[22.5px] tracking-normal`}
+                >
+                Tx : <Link target="blank" href={`https://solscan.io/tx/${transactionID}`}>https://solscan.io/tx/${transactionID.slice(0,10)}</Link>
+                </h1>
+              </div>
             </div>
-          </div>
+            )
+          }
+     
         </section>
 
         <SwapSlippage />
