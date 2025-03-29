@@ -15,6 +15,7 @@ import { useSolBalance } from "@/hooks/useSolBalance";
 import { useSwap } from "@/hooks/useSwap";
 import { Input } from "@/components/ui/input";
 import SearchAdd from "@/components/details/SearchAdd";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
@@ -32,13 +33,25 @@ const SwapPage = () => {
   const { connection } = useAppKitConnection();
   const { walletProvider } = useAppKitProvider<Provider>('solana')
   const { tokens } = useTokens();
-//   const { balances, balancesLoading } = useTokenBalances();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Get token symbol from URL params if available
+  const tokenSymbol = searchParams?.get('token') || null;
+  const action = searchParams?.get('action') || null; // 'buy' or 'sell'
 
   // Local state for token selection and amounts
   const [fromAsset, setFromAsset] = useState<Token>();
-  const [toAsset, setToAsset] = useState<Token>();;
+  const [toAsset, setToAsset] = useState<Token>();
   const [fromAmount, setFromAmount] = useState("");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [popularTokens, setPopularTokens] = useState<string[]>(['SOL', 'USDC', 'RAY', 'JUP', 'BONK']);
+
+  // Helper function to find token by symbol
+  const findTokenBySymbol = (symbol: string): Token | undefined => {
+    if (!tokens) return undefined;
+    return tokens.find(token => token.symbol.toUpperCase() === symbol.toUpperCase());
+  };
 
   // Sol balance hook to update balance post-swap
   const { fetchSolBalance } = useSolBalance({
@@ -63,9 +76,37 @@ const SwapPage = () => {
   // Initialize tokens when available
   useEffect(() => {
     if (tokens && tokens.length >= 2 && !isInitialized) {
-      // Ensure tokens have required address property before setting
-      const validFromToken = tokens[0].address ? tokens[0] : undefined;
-      const validToToken = tokens[1].address ? tokens[1] : undefined;
+      let validFromToken: Token | undefined;
+      let validToToken: Token | undefined;
+
+      // Default stable and base tokens
+      const usdcToken = findTokenBySymbol("USDC");
+      const solToken = findTokenBySymbol("SOL");
+      
+      // If token symbol provided in URL, use it
+      if (tokenSymbol) {
+        const specifiedToken = findTokenBySymbol(tokenSymbol);
+        
+        if (specifiedToken?.address) {
+          // If action is 'sell', set the specified token as fromAsset
+          if (action === 'sell') {
+            validFromToken = specifiedToken;
+            validToToken = usdcToken || solToken || tokens[1];
+          } 
+          // Default or 'buy' action, set the specified token as toAsset
+          else {
+            validFromToken = usdcToken || solToken || tokens[0];
+            validToToken = specifiedToken;
+          }
+        }
+      }
+
+      // Fallback to default tokens if not found
+      if (!validFromToken || !validToToken) {
+        validFromToken = tokens[0].address ? tokens[0] : undefined;
+        validToToken = tokens[1].address ? tokens[1] : undefined;
+      }
+
       if (validFromToken && validToToken) {
         setFromAsset({
           ...validFromToken,
@@ -78,7 +119,7 @@ const SwapPage = () => {
         setIsInitialized(true);
       }
     }
-  }, [tokens, isInitialized]);
+  }, [tokens, isInitialized, tokenSymbol, action]);
 
   const handleFromAssetChange = (token) => {
     if (token) {
@@ -127,12 +168,13 @@ const SwapPage = () => {
       const txid = await signAndSendTransaction();
       if (txid) {
         fetchSolBalance(); // Update SOL balance post-swap
+        toast.success(`Swap completed successfully! TxID: ${txid.slice(0, 8)}...`);
       }
     } catch (error) {
       // Error is already handled inside signAndSendTransaction
       console.error("Swap execution error:", error);
     }
-  }
+  };
 
   const isSwapDisabled =
     !fromAmount ||
@@ -162,17 +204,68 @@ const SwapPage = () => {
       ? (Number(toAmount) / Number(fromAmount)).toFixed(6)
       : null;
 
+  // Helper to check if a token is available in the token list
+  const isTokenAvailable = (symbol: string): boolean => {
+    return !!findTokenBySymbol(symbol);
+  };
+
+  // Generate popular tokens list dynamically from available tokens
+  useEffect(() => {
+    if (tokens && tokens.length > 0) {
+      // Default popular tokens to look for
+      const defaultPopular = ['SOL', 'USDC', 'USDT', 'RAY', 'JUP', 'BONK', 'WIF', 'PYTH'];
+      
+      // Filter to only include tokens that actually exist in our token list
+      const available = defaultPopular.filter(symbol => isTokenAvailable(symbol));
+      
+      // Add the currently selected token if it's not already in the list
+      if (tokenSymbol && !available.includes(tokenSymbol.toUpperCase()) && isTokenAvailable(tokenSymbol)) {
+        available.unshift(tokenSymbol.toUpperCase());
+      }
+      
+      // Limit to 5 tokens max to prevent UI clutter
+      setPopularTokens(available.slice(0, 5));
+    }
+  }, [tokens, tokenSymbol]);
+
   return (
     <main className="max-w-7xl gap-[24px] flex flex-col mb-[200px] px-8 mx-auto mt-8">
       <div className="flex w-full justify-between">
-          {" "}
-          <div className="flex">
-            <SearchAdd />
-          </div>{" "}
-          <appkit-button />
+        <div className="flex">
+          <SearchAdd />
         </div>
+        <appkit-button />
+      </div>
       <section className="md:flex md:flex-row md:gap-4 pxl:gap-6 mx-auto mt-8">
         <section className="gap-4 flex flex-col lgg:w-[444px] pxl:w-[604px]">
+          {/* Quick access tokens */}
+          <div className="flex flex-row gap-2 mb-2 flex-wrap">
+            {popularTokens.map((symbol) => (
+              <button 
+                key={symbol}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  fromAsset?.symbol === symbol ? "bg-blue-500 text-white" : 
+                  toAsset?.symbol === symbol ? "bg-green-500 text-white" : "bg-gray-200"
+                }`}
+                onClick={() => {
+                  const token = findTokenBySymbol(symbol);
+                  if (!token) return;
+                  
+                  // If this token is already the "to" asset, swap direction
+                  if (toAsset?.symbol === symbol) {
+                    handleSwapDirection();
+                  } 
+                  // Otherwise set it as the "from" asset
+                  else if (fromAsset?.symbol !== symbol) {
+                    handleFromAssetChange(token);
+                  }
+                }}
+              >
+                {symbol}
+              </button>
+            ))}
+          </div>
+
           {/* solanabox */}
           <section className="flex flex-col gap-[6px] rounded-[12px] p-[2px] bg-[#ebebeb] border-[#ebebeb] md:w-[320px] lgg:w-[444px] pxl:w-[604px]">
             {/* From token */}
