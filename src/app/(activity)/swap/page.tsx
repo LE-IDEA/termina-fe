@@ -37,7 +37,7 @@ interface SwapPageProps {
   initialToAsset?: Token;
 }
 
-const SwapPage = ({ initialFromAsset, initialToAsset }: SwapPageProps = {}) => {
+const SwapPage = () => {
   const { connection } = useAppKitConnection();
   const { walletProvider } = useAppKitProvider<Provider>("solana");
   const { tokens } = useTokens();
@@ -49,8 +49,8 @@ const SwapPage = ({ initialFromAsset, initialToAsset }: SwapPageProps = {}) => {
   const action = searchParams?.get("action") || null; // 'buy' or 'sell'
 
   // Local state for token selection and amounts
-  const [fromAsset, setFromAsset] = useState<Token | undefined>(initialFromAsset);
-  const [toAsset, setToAsset] = useState<Token | undefined>(initialToAsset);
+  const [fromAsset, setFromAsset] = useState<Token | undefined>();
+  const [toAsset, setToAsset] = useState<Token | undefined>();
   const [fromAmount, setFromAmount] = useState("");
   const [isInitialized, setIsInitialized] = useState(false);
   const [transactionID, setTransactionID] = useState<string | null>(null);
@@ -101,19 +101,11 @@ const SwapPage = ({ initialFromAsset, initialToAsset }: SwapPageProps = {}) => {
     walletProvider,
   });
 
-  useEffect(() => {
-    if (initialFromAsset) {
-      setFromAsset(initialFromAsset);
-    }
-    if (initialToAsset) {
-      setToAsset(initialToAsset);
-    }
-  }, [initialFromAsset, initialToAsset]);
 
   // Initialize tokens including the one from URL if provided
   useEffect(() => {
     const initializeTokens = async () => {
-      if ((initialFromAsset && initialToAsset) || isInitialized) {
+      if ( isInitialized) {
         return;
       }
 
@@ -160,7 +152,7 @@ const SwapPage = ({ initialFromAsset, initialToAsset }: SwapPageProps = {}) => {
     };
 
     initializeTokens();
-  }, [tokens, isInitialized, tokenAddress, action, initialFromAsset, initialToAsset, fromAsset, toAsset]);
+  }, [tokens, isInitialized, tokenAddress, action, fromAsset, toAsset]);
 
   const handleFromAssetChange = (token) => {
     if (token) {
