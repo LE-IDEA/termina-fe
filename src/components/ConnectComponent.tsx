@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 "use client";
 
 import { useAppKitAccount } from "@reown/appkit/react";
@@ -25,7 +27,9 @@ export default function ConnectButton() {
           Disconnect
         </Button>
       ) : (
-        <appkit-button/>
+        <div>
+          <appkit-button />
+        </div>
       )}
     </>
   );
