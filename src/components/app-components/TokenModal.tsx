@@ -26,6 +26,7 @@ interface Token {
   name: string;
   icon?: string;
   decimals?: number;
+  logoURI?: string;
 }
 
 interface TokenSearchModalProps {
@@ -97,9 +98,9 @@ const TokenModal: React.FC<TokenSearchModalProps> = ({
       {/* Trigger Button/Display */}
       <DialogTrigger asChild>
         <span className="flex gap-6 items-center mb-4 cursor-pointer" border-0>
-          {selectedToken?.icon && (
+          {selectedToken?.logoURI && (
             <img
-              src={selectedToken?.icon}
+              src={selectedToken?.logoURI}
               alt={`${selectedToken?.symbol} logo`}
               className="w-12 h-12 rounded-xl"
               onError={(e) => (e.currentTarget.style.display = "none")}
