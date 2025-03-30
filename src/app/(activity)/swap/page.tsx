@@ -3,10 +3,8 @@ import Image from "next/image";
 import { Geologica, Instrument_Serif } from "next/font/google";
 import SwapSlippage from "@/components/details/SwapSlippage";
 import { useState, useEffect } from "react";
-
 import { useAppKitConnection, type Provider } from "@reown/appkit-adapter-solana/react";
 import { useAppKitProvider } from "@reown/appkit/react";
-
 import useTokens from "@/hooks/useTokens";
 import TokenSearchModal from "@/components/app-components/TokenModal";
 // import { useTokenBalances } from "@/hooks/useTokenBalances";
@@ -16,12 +14,14 @@ import { useSwap } from "@/hooks/useSwap";
 import { Input } from "@/components/ui/input";
 import SearchAdd from "@/components/details/SearchAdd";
 import { useRouter, useSearchParams } from "next/navigation";
+import React from "react";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
   subsets: ["latin"],
 });
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
+
 interface Token {
   address?: string;
   symbol: string;
@@ -31,11 +31,11 @@ interface Token {
 
 const SwapPage = () => {
   const { connection } = useAppKitConnection();
-  const { walletProvider } = useAppKitProvider<Provider>('solana')
+  const { walletProvider } = useAppKitProvider<Provider>('solana');
   const { tokens } = useTokens();
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Get token symbol from URL params if available
   const tokenSymbol = searchParams?.get('token') || null;
   const action = searchParams?.get('action') || null; // 'buy' or 'sell'
@@ -121,21 +121,24 @@ const SwapPage = () => {
     }
   }, [tokens, isInitialized, tokenSymbol, action]);
 
-  const handleFromAssetChange = (token) => {
+  // Annotated parameter type for token (for "from" asset change)
+  const handleFromAssetChange = (token: Token): void => {
     if (token) {
       setFromAsset(token);
       setFromAmount("");
     }
   };
 
-  const handleToAssetChange = (token) => {
+  // Annotated parameter type for token (for "to" asset change)
+  const handleToAssetChange = (token: Token): void => {
     if (token) {
       setToAsset(token);
       setFromAmount("");
     }
   };
 
-  const handleFromValueChange = (event) => {
+  // Annotated event parameter for input change
+  const handleFromValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const value = event.target.value;
     if (value === "" || (!isNaN(Number(value)) && Number(value) >= 0)) {
       setFromAmount(value);
@@ -174,7 +177,7 @@ const SwapPage = () => {
       // Error is already handled inside signAndSendTransaction
       console.error("Swap execution error:", error);
     }
-  };
+  }
 
   const isSwapDisabled =
     !fromAmount ||
@@ -183,19 +186,17 @@ const SwapPage = () => {
     toAsset?.address === fromAsset?.address ||
     swapping;
 
-  // Simple fee formatter
-  const formatFee = (fee) => {
+  // Annotated fee parameter type in fee formatter
+  const formatFee = (fee: number | undefined): string => {
     if (!fee) return "$0.00";
     const solPriceInUsd = 20; // Replace with live feed in production
     return `~$${(fee * solPriceInUsd).toFixed(2)}`;
   };
 
   // Calculate total with fee
-  const calculateTotal = () => {
+  const calculateTotal = (): string => {
     if (!fromAmount || !estimatedFee) return "0.00";
-    return `${(Number(fromAmount) + estimatedFee).toFixed(4)} ${
-      fromAsset?.symbol || ""
-    }`;
+    return `${(Number(fromAmount) + estimatedFee).toFixed(4)} ${fromAsset?.symbol || ""}`;
   };
 
   // Calculate swap rate
@@ -240,7 +241,7 @@ const SwapPage = () => {
         <section className="gap-4 flex flex-col lgg:w-[444px] pxl:w-[604px]">
           {/* Quick access tokens */}
           <div className="flex flex-row gap-2 mb-2 flex-wrap">
-            {popularTokens.map((symbol) => (
+            {popularTokens.map((symbol: string) => (
               <button 
                 key={symbol}
                 className={`px-3 py-1 rounded-full text-sm ${
@@ -309,9 +310,7 @@ const SwapPage = () => {
                     defaultToken={toAsset}
                   />
                 </div>
-                <div
-                  className={`${instrumentSerif.className} w-[130px] font-normal text-4xl leading-none tracking-normal text-right`}
-                >
+                <div className={`${instrumentSerif.className} w-[130px] font-normal text-4xl leading-none tracking-normal text-right`}>
                   {toAmount || "0.0"}
                 </div>
               </div>
@@ -326,27 +325,19 @@ const SwapPage = () => {
                   height={12}
                 />
                 <div className="flex flex-row my-auto h-[8px] gap-[4px]">
-                  <h1
-                    className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}
-                  >
+                  <h1 className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}>
                     fee:
                   </h1>
-                  <h1
-                    className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}
-                  >
+                  <h1 className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}>
                     0.5%
                   </h1>
                 </div>
               </div>
               <div className="flex flex-row h-[8px] gap-[4px] my-auto">
-                <h1
-                  className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}
-                >
+                <h1 className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}>
                   Total:
                 </h1>
-                <h1
-                  className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}
-                >
+                <h1 className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}>
                   {calculateTotal()}
                 </h1>
               </div>
@@ -372,9 +363,7 @@ const SwapPage = () => {
             <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
               <Image src="/Devanin.svg" alt="Rate" width={40} height={40} />
               <div className="h-[23px]">
-                <h1
-                  className={`${geologica.className} text-black font-medium text-base leading-[22.5px] tracking-normal`}
-                >
+                <h1 className={`${geologica.className} text-black font-medium text-base leading-[22.5px] tracking-normal`}>
                   Rate: 1 {fromAsset?.name} = {swapRate} {toAsset?.name}
                 </h1>
               </div>
@@ -384,11 +373,8 @@ const SwapPage = () => {
           {/* Network fee display */}
           <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
             <div className="h-[23px]">
-              <h1
-                className={`${geologica.className} text-black font-medium text-base leading-[22.5px] tracking-normal`}
-              >
-                Network Fee: {estimatedFee.toFixed(5)} SOL (
-                {formatFee(estimatedFee)})
+              <h1 className={`${geologica.className} text-black font-medium text-base leading-[22.5px] tracking-normal`}>
+                Network Fee: {estimatedFee?.toFixed(5)} SOL ({formatFee(estimatedFee)})
               </h1>
             </div>
           </div>

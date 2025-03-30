@@ -6,7 +6,7 @@ import { formatNumber } from "@/utils";
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 
-const FirstCrypto = ({ analyticsData }: { analyticsData: Pool }) => {
+const FirstCrypto = ({ analyticsData }: { analyticsData?: Pool }) => {
   if (!analyticsData) return <p>Loading analytics...</p>;
 
   return (
