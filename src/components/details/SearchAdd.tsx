@@ -25,7 +25,7 @@ interface Token {
   address?: string;
   symbol: string;
   name: string;
-  logoURI?: string;
+  icon?: string;
 }
 
 const geologica = Geologica({
@@ -96,11 +96,11 @@ const SearchAdd = () => {
                 <CommandGroup>
                   {tokens.map((token) => (
                     <CommandItem
-                      key={token.address || token.symbol}
+                      key={token?.address || token?.symbol}
                       onSelect={() => handleSelect(token)}
                       
                     >
-                      <Link href={`/${token.address}`} className=" w-full flex items-center gap-2 cursor-pointer">
+                      <Link href={`/${token?.address}`} className=" w-full flex items-center gap-2 cursor-pointer">
                
                       {token?.logoURI && (
                         <img
@@ -113,9 +113,9 @@ const SearchAdd = () => {
                         />
                       )}
                       <div className="flex flex-col">
-                        <span className="font-medium">{token.symbol}</span>
+                        <span className="font-medium">{token?.symbol}</span>
                         <span className="text-sm text-gray-500">
-                          {token.name}
+                          {token?.name}
                         </span>
                       </div>
                       </Link>

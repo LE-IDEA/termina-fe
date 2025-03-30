@@ -4,6 +4,7 @@ import { Geologica, Instrument_Serif } from "next/font/google";
 import useFungibleTokens from "@/hooks/useFungibleTokes";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { formatNumber } from "@/utils";
+import Link from "next/link";
 
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
@@ -33,10 +34,11 @@ const HotList = () => {
       {!loading &&
         !error &&
         fungibleTokens.slice(0, 5).map((token) => (
-          <div key={token.id} className="p-[12px] rounded-[18px] bg-[#ebebeb] flex flex-row justify-between">
+          <Link key={token.id} href={`/${token.id}`}>
+          <div className="p-[12px] rounded-[18px] bg-[#ebebeb] flex flex-row justify-between">
             {/* Left Section: Token Icon & Details */}
             <div className="flex flex-row gap-[10px]">
-              <Image src={token.content?.links?.image} alt={token.content?.metadata.name} width={32} height={32} className="w-[32px] h-[32px]" />
+              <img src={token.content?.links?.image} alt={token.content?.metadata.name} width={32} height={32} className="w-[32px] h-[32px]" />
               <div className="flex flex-col max-w-[162px]">
                 <h1 className={`${geologica.className} font-medium text-[16px] truncate`}>
                   {token.content?.metadata.name || "Unknown Token"}
@@ -65,6 +67,7 @@ const HotList = () => {
               </div>
             </div>
           </div>
+          </Link>
         ))}
     </div>
   );

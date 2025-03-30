@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Geologica, Instrument_Serif } from "next/font/google";
+import React, { useState, useEffect, useMemo } from "react";
+import { Geologica } from "next/font/google";
 import {
   Dialog,
   DialogContent,
@@ -17,32 +17,38 @@ import {
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import useTokens from "@/hooks/useTokens";
-import { debounce } from "@/utils";
 
+// Token interface definition
 interface Token {
   address?: string;
+  mint?: string;
   symbol: string;
   name: string;
-  logoURI?: string;
-  decimals?:number
+  icon?: string;
+  decimals?: number;
 }
 
 interface TokenSearchModalProps {
   onSelect: (token: Token) => void;
-  defaultToken: Token | undefined;
+  defaultToken?: Token;
 }
 
+// Consistent font import
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
   subsets: ["latin"],
 });
 
-const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
+const TokenModal: React.FC<TokenSearchModalProps> = ({
   onSelect,
   defaultToken,
 }) => {
+  // State management
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [selectedToken, setSelectedToken] = useState<Token | undefined>(defaultToken);
+
+  // Use the enhanced useTokens hook without initial search
   const {
     tokens,
     loadMore,
@@ -51,24 +57,26 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
     isLoading,
     isError,
     error,
-  } = useTokens({ search });
+  } = useTokens({ 
+    search: "",
+  });
 
-  const [selectedToken, setSelectedToken] = useState<Token | undefined>(defaultToken);
+  // Filtered tokens based on search input
+  const filteredTokens = useMemo(() => {
+    // If no search, return all tokens
+    if (!search.trim()) return tokens;
 
-  
+    // Filter tokens based on name or symbol (case-insensitive)
+    return tokens.filter(token => 
+      token.name.toLowerCase().includes(search.toLowerCase()) ||
+      token.symbol.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [tokens, search]);
 
   // Update selected token when defaultToken changes
   useEffect(() => {
     setSelectedToken(defaultToken);
   }, [defaultToken]);
-
-  // Debounced search function
-  // const handleSearch = useCallback(
-  //   debounce((value: string) => {
-  //     setSearch(value);
-  //   }, 300),
-  //   []
-  // );
 
   // Handle token selection
   const handleSelect = (token: Token) => {
@@ -86,40 +94,43 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+      {/* Trigger Button/Display */}
       <DialogTrigger asChild>
         <span className="flex gap-6 items-center mb-4 cursor-pointer" border-0>
-          {selectedToken?.logoURI && (
+          {selectedToken?.icon && (
             <img
-              src={selectedToken?.logoURI}
+              src={selectedToken?.icon}
               alt={`${selectedToken?.symbol} logo`}
               className="w-12 h-12 rounded-xl"
               onError={(e) => (e.currentTarget.style.display = "none")}
             />
           )}
           <div className="flex flex-col gap-1 my-auto">
-            <p
-              className={`${geologica.className} font-medium text-[20px]  tracking-normal`}
-            >
-              {selectedToken?.name || "Select"}
+            <p className={`${geologica.className} font-medium text-[20px] tracking-normal`}>
+              {selectedToken?.name || "Select Token"}
             </p>
-            <p
-              className={`${geologica.className} font-normal text-[10px]  tracking-normal opacity-50`}
-            >
+            <p className={`${geologica.className} font-normal text-[10px] tracking-normal opacity-50`}>
               {selectedToken?.symbol || ""}
             </p>
           </div>
         </span>
       </DialogTrigger>
+
+      {/* Modal Content */}
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Select Token</DialogTitle>
         </DialogHeader>
+        
         <Command className="rounded-2xl">
           <CommandInput
             placeholder="Search token name or symbol..."
+            value={search}
             onValueChange={setSearch}
           />
+          
           <CommandList>
+            {/* Loading State */}
             {isLoading ? (
               <CommandEmpty>Loading tokens...</CommandEmpty>
             ) : isError ? (
@@ -128,8 +139,9 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
               </CommandEmpty>
             ) : (
               <>
+                {/* Token List */}
                 <CommandGroup>
-                  {tokens.map((token) => (
+                  {filteredTokens.map((token) => (
                     <CommandItem
                       key={token.address || token.symbol}
                       onSelect={() => handleSelect(token)}
@@ -140,9 +152,7 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
                           src={token.logoURI}
                           alt={`${token.symbol} logo`}
                           className="w-6 h-6 rounded-full"
-                          onError={(e) =>
-                            (e.currentTarget.style.display = "none")
-                          }
+                          onError={(e) => (e.currentTarget.style.display = "none")}
                         />
                       )}
                       <div className="flex flex-col">
@@ -154,6 +164,8 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
                     </CommandItem>
                   ))}
                 </CommandGroup>
+
+                {/* Load More Button */}
                 {hasMore && !search && (
                   <Button
                     variant="ghost"
@@ -166,7 +178,9 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
                 )}
               </>
             )}
-            {!isLoading && !isError && tokens.length === 0 && (
+
+            {/* Empty State */}
+            {!isLoading && !isError && filteredTokens.length === 0 && (
               <CommandEmpty>No tokens found.</CommandEmpty>
             )}
           </CommandList>
@@ -176,4 +190,4 @@ const TokenSearchModal: React.FC<TokenSearchModalProps> = ({
   );
 };
 
-export default TokenSearchModal;
+export default TokenModal;

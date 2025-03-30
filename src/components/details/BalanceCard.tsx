@@ -16,8 +16,7 @@ import useFungibleTokens from "@/hooks/useFungibleTokes";
 const BalanceCard = () => {
   const [isCurr, setIsCurr] = useState(true);
   const { address } = useAppKitAccount();
-  // const { totalBalanceUSD, isLoading } = useUserTokenBalance();
-  const { fungibleTokens, totalPrice, loading } = useFungibleTokens(address || "");
+  const { totalPrice, loading } = useFungibleTokens(address || "");
   
   const changeCurr = () => {
     setIsCurr(!isCurr);
@@ -50,7 +49,7 @@ const BalanceCard = () => {
               ${loading ? "loading..." : totalPrice.toFixed(2)}
             </h1>
             <div className="flex flex-row">
-              <button title="change coin" onClick={changeCurr}>
+              <button title="change coin">
                 <Image src="/ArrowDown.svg" alt="prev" width={18} height={18} />
               </button>
               <Image src="/USDC.png" alt="prev" width={52} height={32} className=" aspect-square" quality={100} />
