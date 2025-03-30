@@ -11,6 +11,9 @@ import { useState } from "react";
 import useTokenData from "@/hooks/useTokenData";
 import { useParams } from "next/navigation";
 import FixedChartWithMarketCap from "@/components/charts/FixedChartWithMarketCap";
+import Link from "next/link";
+import { formatNumber } from "@/utils/formatNumber";
+import { Pool } from "@/types/jupTokens";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
@@ -91,62 +94,75 @@ const Page = () => {
               <h1
                 className={`${geologica.className} font-medium text-[20px] leading-[20px] tracking-[0%]`}
               >
-                {tokenData?.name}
+                {analyticsData?.baseAsset?.name}
               </h1>
               <h1
                 className={`${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] opacity-50`}
               >
-                {tokenData?.symbol}
+                {analyticsData?.baseAsset?.symbol}
               </h1>
             </div>
-            <div className="flex flex-row gap-[6px] md:gap-[6px] justify-between">
-              <div className="px-[12px] flex-1 py-[6px] items-start rounded-xl bg-[#EBEBEB] md:my-auto md:py-3 md:w-[345px] lg:w-[395px] xl:">
+            <div className="flex flex-row gap-[6px] md:gap-[6px] justify-between items-center">
+              {/* <div className="px-[12px] flex-1 py-[6px] items-start rounded-xl bg-[#EBEBEB] md:my-auto md:py-3 md:w-[345px] lg:w-[395px] xl:">
                 <h1
                   className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%] md:text-[16px]`}
                 >
-                  Raydium V1 - From Contract
+                  {analyticsData?.dex}
                 </h1>
-              </div>
-              <Image
-                src="/globeFrame.svg"
-                alt="internet"
-                width={24}
-                height={24}
-                className="p-[6px] bg-[#EBEBEB] rounded-xl md:w-[48px] md:h-[48px]"
-              />
-              <Image
-                src="/sendFrame.svg"
-                alt="send"
-                width={24}
-                height={24}
-                className="p-[6px] bg-[#EBEBEB] rounded-xl md:w-[48px] md:h-[48px]"
-              />
-              <Image
-                src="/twitterFrame.svg"
-                alt="twitter"
-                width={24}
-                height={24}
-                className=" p-[6px] bg-[#EBEBEB] rounded-xl md:w-[48px] md:h-[48px]"
-              />
+              </div> */}
+              {analyticsData?.baseAsset.website && (
+                <Link
+                  href={`${analyticsData.baseAsset.website}`}
+                  className="bg-[#EBEBEB] rounded-xl w-10 aspect-square flex justify-center items-center"
+                >
+                  <Image
+                    src="/globeFrame.svg"
+                    alt="internet"
+                    width={16}
+                    height={16}
+                    className="p-[6px] w-9"
+                  />
+                </Link>
+              )}
+
+              {analyticsData?.baseAsset.twitter && (
+                <Link
+                  href={`${analyticsData.baseAsset.twitter}`}
+                  className="bg-[#EBEBEB] rounded-xl w-10 aspect-square flex justify-center items-center"
+                >
+                  <Image
+                    src="/twitterFrame.svg"
+                    alt="twitter"
+                    width={16}
+                    height={16}
+                    className="p-[6px] w-9"
+                  />
+                </Link>
+              )}
             </div>
           </div>
-          <div className="flex flex-col md:flex-row gap-[24px] md:gap-[4px] md:justify-between rounded-[18px]">
-            <div className=" flex flex-col p-[12px] gap-[24px] bg-[#ebebeb] lg:p-[18px] rounded-[18px]">
+          <div className="flex flex-col md:flex-row gap-[24px] md:gap-8 items-center mt-8 rounded-[18px]">
+            <div className="w-full md:w-fit flex flex-col p-[12px] gap-[24px] bg-[#ebebeb] lg:p-[18px] rounded-[18px]">
               <div className=" h-[38px] gap-[4px] flex flex-col">
                 <h1
                   className={`${geologica.className} font-normal text-[24px] leading-[24px] lg:leading-[1] lg:text-[32px] tracking-[0%]`}
                 >
-                  $1.98
+                  ${analyticsData?.baseAsset.usdPrice.toFixed(3)}
                 </h1>
-                <h1
-                  className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%] text-green-500`}
+                <span
+                  className={`${
+                    (analyticsData?.baseAsset?.stats1h?.priceChange ?? 0) >= 0
+                      ? "text-green-500"
+                      : "text-red-500"
+                  } text-sm`}
                 >
-                  +20%
-                </h1>
+                  {analyticsData?.baseAsset.stats1h?.priceChange?.toFixed(3)}%
+                </span>
               </div>
               <div className="flex flex-row gap-[18px] md:gap-9">
                 <div className="flex flex-row gap-[3px]">
                   <div className=" bg-black p-1 rounded-[6px]">
+                    {/* text-[20px] font-normal md;leading-[1] uppercase tracking-[0] align-middle */}
                     <h1
                       className={`${geologica.className} font-normal text-[12px] lg:text-[20px] leading-[12px] lg:leading-[1] tracking-[0%] text-white`}
                     >
@@ -157,7 +173,7 @@ const Page = () => {
                     <h1
                       className={`${geologica.className} font-normal text-[16px] lg:text-[24px] lg:leading-[1] leading-[16px] tracking-[0%]`}
                     >
-                      175k
+                      {formatNumber(analyticsData?.baseAsset?.mcap ?? 0)}
                     </h1>
                   </div>
                 </div>
@@ -173,7 +189,7 @@ const Page = () => {
                     <h1
                       className={`${geologica.className} font-normal text-[16px] lg:text-[24px] lg:leading-[1] leading-[16px] tracking-[0%]`}
                     >
-                      1B
+                      {formatNumber(analyticsData?.baseAsset?.totalSupply ?? 0)}
                     </h1>
                   </div>
                 </div>
@@ -189,31 +205,40 @@ const Page = () => {
                     <h1
                       className={`${geologica.className} font-normal text-[16px] lg:text-[24px] lg:leading-[1] leading-[16px] tracking-[0%]`}
                     >
-                      51k
+                      {formatNumber(analyticsData?.baseAsset?.liquidity ?? 0)}
                     </h1>
                   </div>
                 </div>
               </div>
             </div>
 
-            <BuySellSet />
-            <SlippageSettings />
+            <BuySellSet analyticsData={analyticsData as Pool}/>
+            {/* <Swap/> */}
           </div>
-          <VolMarkers />
+          <VolMarkers analyticsData={analyticsData as Pool}/>
 
-          <FirstCrypto />
+          <FirstCrypto analyticsData={analyticsData as Pool}/>
 
-          <TopHolds />
+          {/* <TopHolds /> */}
 
-          <div className=" flex flex-row h-[48px] p-3 gap-3 bg-[#ebebeb] rounded-[12px]">
+          <div className="flex flex-row h-[48px] p-3 gap-3 bg-[#ebebeb] rounded-[12px]">
             <div className="w-[24px] h-[24px] gap-2.5">
-              <Image src="/RiskFlag.svg" alt="risk" width={13.71} height={20} />
+              Tags:
             </div>
-            <h1
-              className={`${geologica.className} font-medium text-[20px] leading-[20px] tracking-[0%]`}
-            >
-              Low Risk
-            </h1>
+
+            {analyticsData?.baseAsset?.tags &&
+              analyticsData.baseAsset.tags.length > 0 && (
+                <div className="flex flex-row gap-2 ml-4">
+                  {analyticsData.baseAsset.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 text-[12px] font-medium bg-white rounded-lg"
+                    >
+                      {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                    </span>
+                  ))}
+                </div>
+              )}
           </div>
         </div>
       </div>

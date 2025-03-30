@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import PriceChart from './PriceChart';
 import { fetchPriceData, isPriceUp } from '@/services/priceDataService';
 import { formatNumber } from '@/lib/utils';
-import { getTokenMetadata } from '@/services/solanaTokenService';
 
 import { PriceDataPoint } from './PriceChart';
+import useTokenData from '@/hooks/useTokenData';
 
 interface FixedChartWithMarketCapProps {
   tokenAddress: string;
@@ -32,22 +32,23 @@ const FixedChartWithMarketCap = ({
   const [error, setError] = useState('');
   const [priceUp, setPriceUp] = useState(true);
   const [tokenInfo, setTokenInfo] = useState<{
-    name: string;
-    symbol: string;
-    marketCap: number;
+    name?: string;
+    symbol?: string;
+    marketCap?: number;
   } | null>(null);
+
+  const { analyticsData } = useTokenData(tokenAddress);
 
   useEffect(() => {
     const getTokenInfo = async () => {
       try {
-        const info = await getTokenMetadata(tokenAddress);
-        if (info) {
+
           setTokenInfo({
-            name: info.name,
-            symbol: info.symbol,
-            marketCap: info.marketCap,
+            name: analyticsData?.baseAsset.name,
+            symbol: analyticsData?.baseAsset.symbol,
+            marketCap: analyticsData?.baseAsset.mcap,
           });
-        }
+
       } catch (err) {
         console.error('Error fetching token info:', err);
       }
@@ -79,8 +80,7 @@ const FixedChartWithMarketCap = ({
   }, [tokenAddress, timeframe]);
 
   // Calculate market cap from price data if not provided
-  const displayMarketCap = tokenInfo?.marketCap || marketCap || 
-    (data.length > 0 ? data[data.length - 1].marketCap : 0); // Changed priceData to data
+  const displayMarketCap = tokenInfo?.marketCap
 
   // Calculate or use provided price change percentage
   const calculatedPriceChange = priceChangePercent ?? (data.length >= 2 // Changed priceData to data
@@ -113,7 +113,7 @@ const FixedChartWithMarketCap = ({
         timeframe={timeframe}
         isLoading={loading}
         isPriceUp={priceUp}
-        height="85%"
+        height="75%"
         showMarketCap={showMarketCap}
       />
       

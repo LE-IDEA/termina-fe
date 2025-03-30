@@ -103,9 +103,9 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useMemo, useCallback } from 'react';
 
 // Constants for configuration
-const ITEMS_PER_PAGE = 40;
+const ITEMS_PER_PAGE = 500;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-const MAX_SEARCH_RESULTS = 500; // Limit to prevent overwhelming the UI
+const MAX_SEARCH_RESULTS = 1000; // Limit to prevent overwhelming the UI
 
 // Enhanced Token interface with optional fields
 interface Token {
@@ -204,13 +204,13 @@ const useTokens = ({ search = "", filters }: UseTokensProps = {}) => {
     if (cachedTokens && cachedTimestamp && now - Number(cachedTimestamp) < CACHE_DURATION) {
       allTokens = JSON.parse(cachedTokens);
     } else {
-      const response = await fetch(`https://tokens.jup.ag/tokens?tags=verified`);
+      const response = await fetch(`https://api.jup.ag/tokens/v1/tagged/lst,verified,pump`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch tokens');
       }
       allTokens = await response.json();
-      
+        
       // Optional: Filter tokens by decimals if specified
       if (filters?.minDecimals || filters?.maxDecimals) {
         allTokens = allTokens.filter(token => {

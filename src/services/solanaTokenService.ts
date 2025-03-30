@@ -40,11 +40,15 @@ export const getTokenMetadataFromJupiter = async (
   tokenAddress: string
 ): Promise<TokenMetadata | null> => {
   try {
-    const response = await fetch(`${jupiterApiEndpoint}/token/${tokenAddress}`);
+    const response = await fetch(`https://datapi.jup.ag/v1/pools?assetIds=${tokenAddress}`);
+    
     if (!response.ok) throw new Error("Failed to fetch from Jupiter API");
 
     const data = await response.json();
     if (!data.data) return null;
+
+    console.log(data.data);
+    
 
     const tokenData = data.data;
     return {

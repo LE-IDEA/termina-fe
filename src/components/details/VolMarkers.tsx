@@ -5,7 +5,7 @@ import { formatNumber } from '@/utils';
 
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 
-const VolMarkers = ({ analyticsData }: { analyticsData?: Pool }) => {
+const VolMarkers = ({ analyticsData }: { analyticsData: Pool }) => {
   if (!analyticsData) return <p>Loading...</p>;
 
   return (

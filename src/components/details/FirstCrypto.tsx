@@ -3,17 +3,16 @@ import { Instrument_Serif, Geologica } from "next/font/google";
 import { Pool } from "@/types/jupTokens";
 import { formatNumber } from "@/utils";
 
-const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 
-const FirstCrypto = ({ analyticsData }: { analyticsData?: Pool }) => {
+const FirstCrypto = ({ analyticsData }: { analyticsData: Pool }) => {
   if (!analyticsData) return <p>Loading analytics...</p>;
 
   return (
     <div className="flex flex-col bg-[#ebebeb] h-auto p-3 gap-6 rounded-[12px]">
       {/* Token Name & Icon */}
       <div className="flex items-center gap-2">
-        <Image src={analyticsData?.baseAsset?.icon} alt="Token Icon" width={24} height={24} />
+        <img src={analyticsData?.baseAsset?.icon} alt="Token Icon" width={24} height={24} />
         <h1 className={`${geologica.className} font-bold text-[20px]`}>{analyticsData?.baseAsset?.name ?? "Unknown Token"}</h1>
       </div>
 
