@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
@@ -24,10 +25,16 @@ const downNavLinks = [
         id: 4,
     }
 ];
+
 const DownNav = () => {
+    // Disabled the down navigation by returning null
+    return null;
+
+    /*
+    // Previous Bottom Navigation Code:
     const pathname = usePathname();
     return (
-        <nav className="md:hidden  fixed bottom-0 left-0 bg-[#ebebeb] flex justify-between rounded-tl-[60px] rounded-tr-[60px] py-[24px] px-[48px] w-full z-50">
+        <nav className="md:hidden fixed bottom-0 left-0 bg-[#ebebeb] flex justify-between rounded-tl-[60px] rounded-tr-[60px] py-[24px] px-[48px] w-full z-50">
             {
                 downNavLinks.map((item) => {
                     const isActive = pathname === item.route || pathname?.startsWith(`${item.route}/`);
@@ -38,12 +45,9 @@ const DownNav = () => {
                     )
                 })
             }
-
-
         </nav>
-    )
+    );
+    */
 }
 
-
-
-export default DownNav
+export default DownNav;
