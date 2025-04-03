@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "noEmit": true,
@@ -18,9 +22,12 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
-    "strict": false
+    "strict": false,
+    "strictNullChecks": true
   },
   "include": [
     "next-env.d.ts",
@@ -29,6 +36,8 @@
     ".next/types/**/*.ts",
     "next.config.mjs",
     "src/app/(OnboardingAuth)/(layout.tsx)"
-, "src/components/details/Dexscreener.tsx"  ],
-  "exclude": ["node_modules"]
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

@@ -1,7 +1,7 @@
 import { Instrument_Serif, Geologica } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import ConfirmEmail from "../confirmEmail/page";
+// import ConfirmEmail from "../confirmEmail/page";
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 

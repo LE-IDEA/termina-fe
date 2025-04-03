@@ -1,171 +1,271 @@
-"use client"
-import Image from "next/image"
+"use client";
+import Image from "next/image";
 import { Geologica } from "next/font/google";
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import BlackResponse from "@/components/details/BlackResponse";
 import RedResponse from "@/components/details/RedResponse";
-const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
+import { useAppKitProvider } from "@reown/appkit/react";
+import { type Provider } from "@reown/appkit-adapter-solana/react";
+import { toast } from "react-hot-toast";
 
-const page = () => {
-    const bankOptions = [
-        { name: "Access Bank" }, { name: "First Bank" }, { name: "GT Bank" }, { name: "Zenith Bank" }, { name: "UBA" }
-    ]
-    const [isAccount, setIsAccount] = useState(false);
-    const [notAccount, setNotAccount] = useState(false);
-    const [isInputActive, setIsInputActive] = useState(false);
-    const [response, setResponse] = useState(false);
-    const [blackResponse, redResponse] = useState(true);
+const geologica = Geologica({
+  weight: ["300", "400", "500", "600"],
+  subsets: ["latin"],
+});
 
-    const [naira, setNaira] = useState("");
-    const [dollar, setDollar] = useState("");
-    const [isNairaFirst, setIsNairaFirst] = useState(true);
-    const conversionRate = 1450; // 1 Dollar = 750 Naira
+const ScalexConverterPage = () => {
+  const { walletProvider } = useAppKitProvider<Provider>("solana");
+  const userAddress = walletProvider?.publicKey?.toString();
+  const [address, setAddress] = useState(userAddress);
 
-    const [showBankOptions, setShowBankOptions] = useState(false);
-    const [showWarning, setShowWarning] = useState(false);
-    const accountRef = useRef(null);
+  const [isInputActive, setIsInputActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [response, setResponse] = useState(false);
+  const [blackResponse, setBlackResponse] = useState(true);
+  const [error, setError] = useState("");
 
+  const [email, setEmail] = useState("");
+  const [isNairaFirst, setIsNairaFirst] = useState(false);
+  const [naira, setNaira] = useState("");
+  const [dollar, setDollar] = useState("");
 
-    const handleAccountChange = (e) => {
-        const value = e.target.value;
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
 
-        if (value.length === 10) {
-            setIsAccount(true);
-            setNotAccount(false);
-            setShowBankOptions(true);
-            setShowWarning(false);
-        } else if (value.length > 0) {
-            setIsAccount(false);
-            setNotAccount(true);
-            setShowBankOptions(false);
-            setShowWarning(true);
+  useEffect(() => {
+    const fetchRate = async () => {
+      try {
+        const res = await fetch("/api/exchangeRate");
+        if (!res.ok) {
+          throw new Error("Failed to fetch exchange rate");
+        }
+        const data = await res.json();
+        if (isNairaFirst) {
+          setExchangeRate(data.data.offramp.rate_in_ngn);
         } else {
-            setIsAccount(false);
-            setNotAccount(false);
-            setShowBankOptions(false);
-            setShowWarning(false);
+          setExchangeRate(data.data.onramp.rate_in_ngn);
         }
+      } catch (err) {
+        console.error("Error fetching exchange rate", err);
+        setError("Could not fetch exchange rate");
+      }
     };
-    const handlePaste = async () => {
-        try {
-            const pastedText = await navigator.clipboard.readText();
-            accountRef.current.value = pastedText;
-            handleAccountChange({ target: accountRef.current });
-        } catch (err) {
-            console.error('Failed to paste:', err);
+
+    fetchRate();
+  }, []);
+
+  // Input handlers
+  const handleNairaChange = (e) => {
+    const nairaValue = e.target.value;
+    setNaira(nairaValue);
+    // Use dynamic exchange rate instead of hardcoded value
+    if (exchangeRate) {
+      setDollar((nairaValue / exchangeRate).toFixed(2));
+    }
+  };
+
+  const handleDollarChange = (e) => {
+    const dollarValue = e.target.value;
+    setDollar(dollarValue);
+    if (exchangeRate) {
+      setNaira((dollarValue * exchangeRate).toFixed(2));
+    }
+  };
+
+  const handleSwitch = () => {
+    setIsNairaFirst(!isNairaFirst);
+  };
+
+
+  const handleSubmit = async () => {
+    // Validation
+    if (!address) {
+      setBlackResponse(false);
+      setResponse(true);
+      return;
+    }
+
+    if (!email) {
+      setError("Email is required");
+      setBlackResponse(false);
+      setResponse(true);
+      return;
+    }
+
+    if (!naira || !dollar) {
+      setError("Please enter an amount");
+      setBlackResponse(false);
+      setResponse(true);
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+    setResponse(false);
+
+    try {
+      const res = await fetch("/api/scalex", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: isNairaFirst ? Number(dollar) : Number(naira),
+          address,
+          email,
+          type: "offramp"
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // setError(data.error || "An error occurred");
+        setBlackResponse(false);
+        console.log(data.error);
+
+        toast.error("Transaction failed");
+      } else {
+        setBlackResponse(true);
+        if (data.data?.link) {
+          window.open(data.data.link, "_blank");
         }
-    };
+        toast.success("Transaction initiated successfully");
+      }
+    } catch (err) {
+      setError("Failed to initiate transaction");
+      setBlackResponse(false);
+      toast.error("Failed to initiate transaction");
+    } finally {
+      setIsLoading(false);
+      setResponse(true);
+    }
+  };
 
-    const handleNairaChange = (e) => {
-        const nairaValue = e.target.value;
-        setNaira(nairaValue);
-        setDollar((nairaValue / conversionRate).toFixed(2)); // Convert to Dollar
-    };
+  return (
+    <div className="flex flex-col gap-3 h-auto rounded-[24px] md:w-[500px] sm:w-[400px] mt-16 md:mt-0">
+      <div className="flex flex-row justify-between p-2 rounded-[12px] border-[1px] border-solid">
+        <input
+          id="Solana address"
+          className={`${geologica.className} font-normal text-[16px] leading-1 tracking-normal outline-none w-full`}
+          placeholder="Connect wallet to continue"
+          title="Solana address"
+          value={address || ""}
+          onChange={(e) => {
+            setAddress(e.target.value);
+          }}
+        />
+        <Image
+          src="/AddressCopy.svg"
+          alt="Copy"
+          width={20}
+          height={20}
+          className="my-auto"
+        />
+      </div>
 
-    const handleDollarChange = (e) => {
-        const dollarValue = e.target.value;
-        setDollar(dollarValue);
-        setNaira((dollarValue * conversionRate).toFixed(2)); // Convert to Naira
-    };
+      <div className="flex flex-row justify-between p-2 rounded-[12px] border-[1px] border-solid">
+        <input
+          id="Email"
+          className={`${geologica.className} bg-transparent  font-normal text-[16px] leading-1 tracking-normal outline-none w-full`}
+          placeholder="Enter your email"
+          title="Enter email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
 
-    const handleSwitch = () => {
-        // Switch the input order and clear the values
-        setIsNairaFirst(!isNairaFirst);
-        // setNaira("");
-        // setDollar("");
-    };
+      <div
+        className={`rounded-[12px] ${
+          response ? (blackResponse ? "bg-black" : "bg-[#ffcbcb]") : null
+        }`}
+      >
+        <div
+          className={`flex flex-row gap-3 justify-between h-[104px] bg-white p-3 border-[1px] border-solid rounded-[12px] ${
+            response
+              ? blackResponse
+                ? "border-black"
+                : "border-[#ffcbcb]"
+              : null
+          }`}
+        >
+          <div className="flex flex-col gap-1.5 h-[80px] w-full">
 
-
-    return (
-        <div className="flex flex-col rounded-[24px] gap-3 md:w-[500px]">
-            <div className="flex flex-row  p-2 rounded-[12px] border-[1px] border-solid">
-                <input ref={accountRef} name="Account Number" id="acct" title="Enter account number" type="number" placeholder="10 digit account number" className={`${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] hidespin outline-none rounded-lg flex-1`} onChange={handleAccountChange} style={{  MozAppearance: 'textfield', WebkitAppearance: 'none' }} />
-                <Image src="/AddressCopy.svg" alt='pastee' width={20} height={20} className="my-auto" onClick={handlePaste} />
+            <div className="flex flex-col gap-1 h-[34px]">
+              <label
+                htmlFor={isNairaFirst ? "naira" : "dollar"}
+                className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%]`}
+              >
+                {isNairaFirst ? "NGN" : "USDC"}
+              </label>
+              <input
+                value={isNairaFirst ? naira : dollar}
+                onChange={isNairaFirst ? handleNairaChange : handleDollarChange}
+                id={isNairaFirst ? "naira" : "dollar"}
+                className={`h-[20px] ${geologica.className} bg-transparent font-normal text-[20px] leading-[20px] tracking-normal outline-none`}
+                placeholder="0.00"
+                title="Enter amount"
+                onFocus={() => setIsInputActive(true)}
+                onBlur={() => setIsInputActive(false)}
+              />
             </div>
 
-            <div className={`flex flex-col rounded-lg ${showBankOptions ? 'bg-black' : showWarning ? 'bg-[#ffcbcb]' : null}`}>
-                <input name="Bank name" id="acct" title="Enter bank name" placeholder="Enter bank name" className={`p-[10px] ${geologica.className} font-normal text-[16px] leading-[16px] tracking-[0%] border-[0.4px] border-solid  rounded-lg ${showBankOptions ? 'border-black' : showWarning ? 'border-[#ffcbcb]' : null}`} />
-                {showBankOptions && (
-                    <div className="flex flex-col bg-black gap-[12px] rounded-br-[12px] rounded-bl-[12px] p-3" >
-                        {bankOptions.slice(0, 3).map((bank, index) => (
-                            <div key={index} className=" ">
-                                <h1 className={`${geologica.className} font-medium text-[8px] leading-[8px] tracking-[0%] text-white`}>{bank.name}</h1>
-                            </div>
-                        ))}
-                    </div>
-                )}
-                {showWarning && (
-                    <div className="flex p-[10px] items-center rounded-br-[12px] rounded-bl-[12px] bg-[#ffcbcb]">
-                        <div className="flex flex-row items-center justify-center gap-[4px] mx-auto">
-                            <Image src="/circleDetaill.svg" alt='warning' width={12} height={12} className="my-auto" />
-                            <h1 className={`${geologica.className} font-medium text-[8px] my-auto leading-[8px] tracking-[0%] text-center text-[#AC1717]`}>
-                                Not in our registry
-                            </h1>
-                        </div>
-                    </div>
-                )}
-            </div> 
-
-            <div className={` rounded-[12px] ${response ? blackResponse ? 'bg-black' : 'bg-[#ffcbcb]' : null}`}>
-                <div className={`flex flex-row gap-3 justify-between bg-white p-3 border-[1px] border-solid rounded-[12px] ${response ? blackResponse ? 'border-black' : 'border-[#ffcbcb]' : null}`}>
-                    <div className="flex flex-col gap-1.5 ">
-                        <div className="flex flex-col gap-1 ">
-                            <label htmlFor={isNairaFirst ? "naira" : "dollar"} className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%]`}>{isNairaFirst ? "NGN" : "USDC"}</label>
-                            <input
-
-                                value={isNairaFirst ? naira : dollar} onChange={isNairaFirst ? handleNairaChange : handleDollarChange}
-                                id={isNairaFirst ? "naira" : "dollar"} className={`h-[20px] ${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal outline-none`} placeholder="0.00" title="Enter amount" onFocus={() => setIsInputActive(true)}
-                                onBlur={() => setIsInputActive(false)}></input>
-                        </div>
-
-                        <div className=" border-[0.4px] border-solid border-[#444444] opacity-50 rounded-lg md:w-[450px]"></div>
-
-                        <div className="flex flex-col gap-1 ">
-                            <label htmlFor={isNairaFirst ? "dollar" : "naira"} className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%]`}>{isNairaFirst ? "USDC" : "NGN"} </label>
-                            <input
-                                value={isNairaFirst ? dollar : naira} onChange={isNairaFirst ? handleDollarChange : handleNairaChange}
-                                id={isNairaFirst ? "dollar" : "naira"} className={`h-[20px] ${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal outline-none`} placeholder="0.00" title="Enter amount" onFocus={() => setIsInputActive(true)}
-                                onBlur={() => setIsInputActive(false)}></input>
-                        </div>
+            <div className="border-[0.4px] border-solid border-[#444444] opacity-50 rounded-lg w-full"></div>
 
 
-                    </div>
-                    <Image onClick={handleSwitch} src="/refresh.svg" alt='Home' width={20} height={20} className="my-auto" />
-                </div>
-
-                {response ?
-                    blackResponse ? <BlackResponse /> : <RedResponse />
-                    :
-                    null
-                }
-
-
-
+            <div className="flex flex-col gap-1 h-[34px]">
+              <label
+                htmlFor={isNairaFirst ? "dollar" : "naira"}
+                className={`${geologica.className} font-normal text-[10px] leading-[10px] tracking-[0%]`}
+              >
+                {isNairaFirst ? "USDC" : "NGN"}
+              </label>
+              <input
+                value={isNairaFirst ? dollar : naira}
+                onChange={isNairaFirst ? handleDollarChange : handleNairaChange}
+                id={isNairaFirst ? "dollar" : "naira"}
+                className={`h-[20px] ${geologica.className} font-normal text-[20px] leading-[20px] tracking-normal outline-none`}
+                placeholder="0.00"
+                title="Enter amount"
+              />
             </div>
-            {isAccount ?
-                <div className={`flex gap-2 px-6 py-3 rounded-[12px] bg-black`} >
-                    <h1 className={`m-auto ${geologica.className}  font-normal text-[16px] leading-[19.2px] tracking-normal text-white text-center`}>John Idaku Ifechi</h1>
-                </div> : null
-            }
+          </div>
 
-            {
-                notAccount ?
-                    <div className={`flex flex-col gap-2 rounded-[12px] bg-[#ffcbcb] items-center `} >
+          <Image
+            onClick={handleSwitch}
+            src="/refresh.svg"
+            alt="Switch"
+            width={20}
+            height={20}
+            className="my-auto cursor-pointer"
+          />
+        </div>
 
-                        <div className="flex flex-row  px-6 py-3 gap-[4px] m-auto">
-                            <Image src="/circleDetaill.svg" alt='warning' width={12} height={12} />
-                            <h1 className={`${geologica.className} font-medium text-[8px] leading-[8px] my-auto tracking-[0%] text-center text-[#AC1717]`}>account not found</h1>
-                        </div>
+        {response &&
+          (blackResponse ? (
+            <BlackResponse />
+          ) : (
+            <RedResponse errorMessage={error} />
+          ))}
+      </div>
 
-                    </div>
-                    : null
-            }
+      <button
+        className={`flex gap-2 h-[43px] pt-3 pr-6 pb-3 pl-6 rounded-[12px] ${
+          isLoading
+            ? "bg-gray-400"
+            : isInputActive && address
+            ? "bg-blue-500"
+            : "bg-[#444444]"
+        } text-white cursor-pointer`}
+        onClick={handleSubmit}
+        disabled={isLoading || !address}
+      >
+        <h1
+          className={`m-auto ${geologica.className} font-normal text-[16px] leading-[19.2px] tracking-normal text-center`}
+        >
+          {isLoading ? "Processing..." : "Submit"}
+        </h1>
+      </button>
+    </div>
+  );
+};
 
-            <button className={`flex gap-2 py-3 px-6 rounded-[12px] ${isInputActive ? 'bg-blue-500' : 'bg-[#444444]'}`} >
-                <h1 className={`m-auto ${geologica.className}  font-normal text-[16px] leading-[19.2px] tracking-normal text-white text-center`}>Submit</h1>
-            </button>
-        </div >
-    )
-}
-
-export default page
+export default ScalexConverterPage;

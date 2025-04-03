@@ -7,10 +7,30 @@ const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 const CurrencyChange = () => {
 
     const currency = [
-        {     imgURL: "/Nigeria.png",     id: 1,     curName: "Nigerian Naira",     curCode: "NGN" },
-        {     imgURL: "/UK.png",     id: 2,     curName: "British Pounds",     curCode: "GBP"},
-        {     imgURL: "/Solana.svg",     id: 3,     curName: "Solana",     curCode: "SOL"},
-        {     imgURL: "/USDC.png",     id: 4,     curName: "USDC",     curCode: "USDC"}
+        {
+            imgURL: "/Nigeria.png",
+            id: 1,
+            curName: "Nigerian Naira",
+            curCode: "NGN"
+        },
+        {
+            imgURL: "/UK.png",
+            id: 2,
+            curName: "British Pounds",
+            curCode: "GBP"
+        },
+        {
+            imgURL: "/Solana.svg",
+            id: 3,
+            curName: "Solana",
+            curCode: "SOL"
+        },
+        {
+            imgURL: "/USDC.png",
+            id: 4,
+            curName: "USDC",
+            curCode: "USDC"
+        }
     ];
     const [isCurr, setIsCurr] = useState(true);
     const changeCurr = () => {
@@ -20,11 +40,9 @@ const CurrencyChange = () => {
         <>
         {
           isCurr ? (  
-        <section onClick={changeCurr} className="fixed w-screen py-32 z-10 top-[0px] left-0 overflow-hidden h-screen bg-black items-center cursor-pointer bg-opacity-50">
+        <section onClick={changeCurr} className="w-[364px] overflow-auto h-screen bg-black fixed items-center cursor-pointer bg-opacity-50">
 
-
-
-        <div className="bg-[#ffff] flex m-auto flex-col items-center justify-between w-[292px]  p-[12px] gap-[24px] rounded-[12px]">
+        <div className="bg-[#ffff] flex z-10 fixed top-1/3 left-[44px] m-auto flex-col items-center justify-between w-[292px]  p-[12px] gap-[24px] rounded-[12px]">
             {currency.map((item) => {
                 return (
                     <div key={item.id} className="flex flex-row w-[268px] p-3 gap-[6px] hover:bg-[#ebebeb] rounded-[12px] ">

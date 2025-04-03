@@ -1,60 +1,60 @@
 import Image from "next/image";
 import { Instrument_Serif, Geologica } from "next/font/google";
-const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
+import { Pool } from "@/types/jupTokens";
+import { formatNumber } from "@/utils";
+
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 
-const FirstCrypto = () => {
+const FirstCrypto = ({ analyticsData }: { analyticsData: Pool }) => {
+  if (!analyticsData) return <p>Loading analytics...</p>;
+
   return (
-      <div className="flex flex-col bg-[#ebebeb]  h-[124px] p-3 gap-6 rounded-[12px]">
-          <h1 className={`${geologica.className} font-bold text-[20px] leading-[20px] tracking-[0%]`}>
-              First Crypto President
-          </h1>
-          <div className="flex flex-col  h-[56px] gap-2.5">
-              <div className="flex flex-row  h-[12px] gap-[4.5px] justify-between">
-                  <h1 className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%] opacity-50`}>
-                      Creator
-                  </h1>
-                  <div className="flex flex-row [162px] h-[12px] gap-[12px]">
-                      <h1 className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%]`}>
-                          F4aLc3iBr...3jOXwv53F7
-                      </h1>
-                      <Image src="/Copy.svg" alt="copy" width={12} height={12} />
-
-                  </div>
-
-              </div>
-              <div className="flex flex-row  h-[12px] gap-[4.5px] justify-between">
-                  <h1 className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%] opacity-50`}>
-                      Mint Authority
-                  </h1>
-                  <div className="flex flex-row [162px] h-[12px] gap-[12px]">
-                      <h1 className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%]`}>
-                          None
-                      </h1>
-                      <Image src="/Copy.svg" alt="copy" width={12} height={12} />
-
-                  </div>
-
-              </div>
-              <div className="flex flex-row  h-[12px] gap-[4.5px] justify-between">
-                  <h1 className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%] opacity-50`}>
-                      LP Locked
-                  </h1>
-                  <div className="flex flex-row [162px] h-[12px] gap-[12px]">
-                      <h1 className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%]`}>
-                          100%
-                      </h1>
-                      <Image src="/Copy.svg" alt="copy" width={12} height={12} />
-
-                  </div>
-
-              </div>
-
-          </div>
-
-
+    <div className="flex flex-col bg-[#ebebeb] h-auto p-3 gap-6 rounded-[12px]">
+      {/* Token Name & Icon */}
+      <div className="flex items-center gap-2">
+        <img src={analyticsData?.baseAsset?.icon} alt="Token Icon" width={24} height={24} />
+        <h1 className={`${geologica.className} font-bold text-[20px]`}>{analyticsData?.baseAsset?.name ?? "Unknown Token"}</h1>
       </div>
-  )
-}
 
-export default FirstCrypto
+      <div className="flex flex-col gap-3">
+        {/* Creator Address */}
+        <div className="flex flex-row justify-between">
+          <h1 className={`${geologica.className} text-[12px] opacity-50`}>Creator</h1>
+          <div className="flex flex-row gap-2">
+            <h1 className={`${geologica.className} text-[12px] truncate`}>{analyticsData?.baseAsset?.dev ?? "N/A"}</h1>
+            <Image src="/Copy.svg" alt="copy" width={12} height={12} />
+          </div>
+        </div>
+
+        {/* Mint Authority */}
+        <div className="flex flex-row justify-between">
+          <h1 className={`${geologica.className} text-[12px] opacity-50`}>Mint Authority</h1>
+          <div className="flex flex-row gap-2">
+            <h1 className={`${geologica.className} text-[12px]`}>{analyticsData?.audit?.mintAuthorityDisabled ? "Disabled" : "Enabled"}</h1>
+            <Image src="/Copy.svg" alt="copy" width={12} height={12} />
+          </div>
+        </div>
+
+        {/* LP Locked */}
+        <div className="flex flex-row justify-between">
+          <h1 className={`${geologica.className} text-[12px] opacity-50`}>LP Locked</h1>
+          <h1 className={`${geologica.className} text-[12px]`}>{formatNumber(analyticsData?.liquidity)}</h1>
+        </div>
+
+        {/* Holders */}
+        <div className="flex flex-row justify-between">
+          <h1 className={`${geologica.className} text-[12px] opacity-50`}>Total Holders</h1>
+          <h1 className={`${geologica.className} text-[12px]`}>{formatNumber(analyticsData?.baseAsset?.holderCount)}</h1>
+        </div>
+
+        {/* Top Holders Percentage */}
+        <div className="flex flex-row justify-between">
+          <h1 className={`${geologica.className} text-[12px] opacity-50`}>Top Holders %</h1>
+          <h1 className={`${geologica.className} text-[12px]`}>{analyticsData?.baseAsset?.audit?.topHoldersPercentage?.toFixed(2)}%</h1>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FirstCrypto;

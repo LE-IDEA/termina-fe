@@ -1,155 +1,118 @@
 "use client";
+
+import { ArrowDownUp, ArrowRight, ChevronDown, Wallet } from "lucide-react";
 import Image from "next/image";
-import { FC, useState } from "react";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-import app from "../../lib/firebase";
+
 import { Button } from "@/components/ui/button";
-import heroImg from "../../../public/shield-icon.png";
-import { Instrument_Serif, Geologica } from "next/font/google";
-import { Mail, Sparkles } from "lucide-react";
-import { Input } from "../ui/input";
-import toast, { Toaster } from "react-hot-toast";
-import { motion, AnimatePresence } from "framer-motion";
-import WaitlistForm from "./WaitlistForm";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
-const geologica = Geologica({
-  weight: ["300", "400", "500", "600"],
-  subsets: ["latin"],
-});
+import Swap from "../app-components/Swap";
+import OnrampModal from "../app-components/Onramp";
+import OfframpModal from "../app-components/Offramp";
 
-const Hero: FC = () => {
-  const [email, setEmail] = useState("");
-  const [wishlist, setWishList] = useState("");
-
-  const [formState, setFormState] = useState("waitlist");
-
-  const db = getFirestore(app);
-
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
-    e.preventDefault();
-    try {
-      // await addDoc(collection(db, "waitlist"), {
-      //   email,
-      //   timestamp: new Date(),
-      // });
-      // setEmail("");
-      toast.success("Successfully joined waitlist!");
-      setFormState("wishlist");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error joining waitlist");
-    }
-  };
-
-  const handleWishList = async (e: { preventDefault: () => void }) => {
-    e.preventDefault();
-    try {
-      // await addDoc(collection(db, "waitlist"), {
-      //   email,
-      //   timestamp: new Date(),
-      // });
-      // setEmail("");
-      toast.success("Successfully added to wishlist!");
-      setFormState("done");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error joining waitlist");
-    }
-  };
-
+export default function CryptoDashboard() {
   return (
-    <>
-      <section className={`container mx-auto mt-0 `}>
-        <div className="mx-auto md:grid max-w-screen-lg px-4 pt-12 flex flex-col-reverse md:grid-cols-12 lg:gap-16  lg:pt-28 xl:gap-0">
-          <div className="md:col-span-7">
-            <h1
-              className={`mb-4 max-w-3xl text-4xl font-extrabold leading-none tracking-tight lg:text-5xl xl:text-6xl ${instrumentSerif.className}`}
-            >
-              Gas abstraction with improved UI for degening experience.
-              <br />
-            </h1>
-
-            <p
-              className={`text-base leading-relaxed/2 lg:mb-8 mb-6 max-w-2xl font-light text-gray-700 ${geologica.className}`}
-            >
-              Trade memecoins on Solana effortlessly. Swap meme tokens for SPL
-              tokens in a few clicks—no hassle, no telegram trade bot, just
-              safe, secure, and intuitive.
-            </p>
-
-            {/* <div className="mb-4 space-y-4 sm:flex sm:space-x-4 sm:space-y-0">
-              {formState === "waitlist" && (
-                <form
-                  className="flex space-x-3 items-center w-full max-w-md "
-                  onSubmit={handleSubmit}
-                >
-                  <div className="relative flex-1 gap-2 p-1 rounded-xl border bg-background">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      placeholder="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 pl-9"
-                      required
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="bg-blue-500 text-white rounded-xl text-lg h-10 py-2 font-medium px-6"
-                  >
-                    Join Waitlist
-                  </Button>
-                </form>
-              )}
-
-              {formState === "wishlist" && (
-                <form
-                  className="flex space-x-3 items-center w-full max-w-md "
-                  onSubmit={handleWishList}
-                >
-                  <div className="relative flex-1 gap-2 p-1 rounded-xl border bg-background">
-                    <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      placeholder="email"
-                      value={email}
-                      onChange={(e) => setWishList(e.target.value)}
-                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 pl-9"
-                      required
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="bg-blue-500 text-white rounded-xl text-lg h-10 py-2 font-medium px-6"
-                  >
-                    Add Wishlist
-                  </Button>
-                </form>
-              )}
-
-              {formState === "done" && (
-                <Button className="bg-blue-500 w-full text-white rounded-xl text-lg h-10 py-2 font-medium px-6 hover:bg-blue-500">
-                  Thank you for joining!
-                </Button>
-              )}
-            </div> */}
-            <WaitlistForm/>
+    <div className="w-11/12 md:max-w-6xl mx-auto bg-background my-4 p-4 md:p-6 md:my-6 lg:my-8">
+      <div className="">
+        <Card className="w-full md:w-1/2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wallet className="h-5 w-5" />
+              Your Balance
+            </CardTitle>
+            <CardDescription>Total value across all tokens</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">$12,345.67</div>
+            <div className="mt-4 w-3/4 flex flex-col sm:flex-row gap-4">
+              <OnrampModal /> <OfframpModal />
+            </div>
+          </CardContent>
+        </Card>
+        <div className="grid gap-4 mt-8 md:grid-cols-2 lg:grid-cols-6">
+          <div className="lg:col-span-3">
+            <Swap />
           </div>
-          <div className="md:col-span-5 lg:mt-0 lg:flex">
-            <Image
-              src={heroImg}
-              alt=""
-              width={400}
-              height={400}
-              className="w-[240px] h-[240px]  lg:w-[340px] lg:h-[340px] mx-auto"
-            />
-          </div>
+
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle>Trending Tokens</CardTitle>
+              <CardDescription>Popular tokens in the last 24h</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  {
+                    name: "Solana",
+                    symbol: "SOL",
+                    price: "$102.45",
+                    change: "+12.3%",
+                    positive: true,
+                  },
+                  {
+                    name: "Cardano",
+                    symbol: "ADA",
+                    price: "$0.89",
+                    change: "+5.6%",
+                    positive: true,
+                  },
+                  {
+                    name: "Polkadot",
+                    symbol: "DOT",
+                    price: "$7.23",
+                    change: "-2.1%",
+                    positive: false,
+                  },
+                  {
+                    name: "Avalanche",
+                    symbol: "AVAX",
+                    price: "$35.78",
+                    change: "+8.9%",
+                    positive: true,
+                  },
+                ].map((token) => (
+                  <div
+                    key={token.symbol}
+                    className="flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src="/placeholder.svg?height=32&width=32"
+                        alt={token.symbol}
+                        width={32}
+                        height={32}
+                        className="rounded-full"
+                      />
+                      <div>
+                        <div className="font-medium">{token.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {token.symbol}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">{token.price}</div>
+                      <div
+                        className={
+                          token.positive ? "text-emerald-500" : "text-red-500"
+                        }
+                      >
+                        {token.change}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        <Toaster />
-      </section>
-    </>
+      </div>
+    </div>
   );
-};
-export default Hero;
+}
