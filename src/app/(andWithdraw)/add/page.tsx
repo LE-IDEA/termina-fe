@@ -82,7 +82,7 @@ const ScalexConverterPage = () => {
 
   const handleSubmit = async () => {
     setIsRamp(true);
-    console.log("ramp is on");
+    
     // Validation
     if (!address) {
       setBlackResponse(false);
