@@ -5,13 +5,12 @@ import VolMarkers from "@/components/details/VolMarkers";
 import Image from "next/image";
 import { Geologica } from "next/font/google";
 import FirstCrypto from "@/components/details/FirstCrypto";
-import { useEffect, useRef } from "react";
-import useTokenData from "@/hooks/useTokenData";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Pool } from "@/types/jupTokens";
 import { formatNumber } from "@/utils";
-import Swap from "@/components/app-components/Swap";
+import useTokenData from "@/hooks/useTokenData";
+import { useEffect, useState } from "react";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
@@ -24,56 +23,54 @@ const page = () => {
     (params?.tokenAddress as string) || ""
   );
 
-  console.log(analyticsData);
+  // State for dynamic price and market cap
+  const [dynamicPrice, setDynamicPrice] = useState(0);
+  const [dynamicMcap, setDynamicMcap] = useState(0);
+  const [priceChange, setPriceChange] = useState(0);
+  const [priceDirection, setPriceDirection] = useState(1); // 1 for up, -1 for down
 
-  const PRICE_CHART_ID = "price-chart-widget-container";
-
-  const containerRef = useRef(null);
-
+  // Initialize dynamic values once analyticsData is loaded
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const loadWidget = () => {
-      // @ts-ignore
-      if (typeof window?.createMyWidget === "function") {
-        // @ts-ignore
-        window?.createMyWidget(PRICE_CHART_ID, {
-          autoSize: true,
-          chainId: "solana",
-          tokenAddress: `${params?.tokenAddress}`,
-          defaultInterval: "1D",
-          timeZone:
-            Intl.DateTimeFormat().resolvedOptions().timeZone ?? "Etc/UTC",
-          theme: "moralis",
-          locale: "en",
-          backgroundColor: "#071321",
-          gridColor: "#0d2035",
-          textColor: "#68738D",
-          candleUpColor: "#4CE666",
-          candleDownColor: "#E64C4C",
-          hideLeftToolbar: false,
-          hideTopToolbar: false,
-          hideBottomToolbar: false,
-        });
-      } else {
-        console.error("createMyWidget function is not defined.");
-      }
-    };
-
-    if (!document.getElementById("moralis-chart-widget")) {
-      const script = document.createElement("script");
-      script.id = "moralis-chart-widget";
-      script.src = "https://moralis.com/static/embed/chart.js";
-      script.type = "text/javascript";
-      script.async = true;
-      script.onload = loadWidget;
-      script.onerror = () => {
-        console.error("Failed to load the chart widget script.");
-      };
-      document.body.appendChild(script);
-    } else {
-      loadWidget();
+    if (analyticsData?.baseAsset) {
+      setDynamicPrice(analyticsData.baseAsset.usdPrice);
+      setDynamicMcap(analyticsData.baseAsset.mcap || 0);
+      setPriceChange(analyticsData.baseAsset.stats1h?.priceChange || 0);
     }
-  }, []);
+  }, [analyticsData]);
+
+  // Simulate price fluctuations
+  useEffect(() => {
+    if (!dynamicPrice) return;
+
+    const interval = setInterval(() => {
+      // Random percentage change between -0.5% and +0.5%
+      const randomChange = (Math.random() - 0.5) * 0.01;
+      
+      // Switch direction occasionally
+      if (Math.random() > 0.7) {
+        setPriceDirection(prev => prev * -1);
+      }
+
+      // Calculate new price with slight bias based on direction
+      const newPrice = dynamicPrice * (1 + (randomChange * priceDirection));
+      setDynamicPrice(newPrice);
+      
+      // Update market cap proportionally
+      const mcapRatio = (analyticsData?.baseAsset?.mcap || 0) / (analyticsData?.baseAsset?.usdPrice || 1);
+      setDynamicMcap(newPrice * mcapRatio);
+      
+      // Update price change percentage
+      setPriceChange(prev => {
+        const newChange = prev + randomChange * 100 * priceDirection;
+        // Limit to a reasonable range
+        return Math.max(-10, Math.min(10, newChange));
+      });
+    }, 3000); // Update every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [dynamicPrice, analyticsData, priceDirection]);
+
+  console.log(analyticsData);
 
   return (
     <div className="items-center relative justify-center p-4 ssm:px-8 sm:px-16  md:px-4 mdd:px-8 mddd:px-16 lgg:px-24 ">
@@ -95,16 +92,7 @@ const page = () => {
         </div>
 
         <div className="flex flex-col gap-[12px]">
-          {/* dexgraph */}
-          <div className="p-[1/1] h-full md:h-[400px] bg-[#EBEBEB] ">
-            <div style={{ width: "100%", height: "100%" }}>
-              <div
-                id={PRICE_CHART_ID}
-                ref={containerRef}
-                style={{ width: "100%", height: "100%" }}
-              />
-            </div>
-          </div>
+          {/* Removed chart div */}
           <div className="flex flex-col gap-[12px] md:flex-row md:justify-between">
             <div className="flex flex-col gap-[12px]">
               <h1
@@ -119,13 +107,6 @@ const page = () => {
               </h1>
             </div>
             <div className="flex flex-row gap-[6px] md:gap-[6px] justify-between items-center">
-              {/* <div className="px-[12px] flex-1 py-[6px] items-start rounded-xl bg-[#EBEBEB] md:my-auto md:py-3 md:w-[345px] lg:w-[395px] xl:">
-                <h1
-                  className={`${geologica.className} font-medium text-[12px] leading-[12px] tracking-[0%] md:text-[16px]`}
-                >
-                  {analyticsData?.dex}
-                </h1>
-              </div> */}
               {analyticsData?.baseAsset.website && (
                 <Link
                   href={`${analyticsData.baseAsset.website}`}
@@ -161,24 +142,23 @@ const page = () => {
             <div className="w-full md:w-fit flex flex-col p-[12px] gap-[24px] bg-[#ebebeb] lg:p-[18px] rounded-[18px]">
               <div className=" h-[38px] gap-[4px] flex flex-col">
                 <h1
-                  className={`${geologica.className} font-normal text-[24px] leading-[24px] lg:leading-[1] lg:text-[32px] tracking-[0%]`}
+                  className={`${geologica.className} font-normal text-[24px] leading-[24px] lg:leading-[1] lg:text-[32px] tracking-[0%] transition-all duration-500`}
                 >
-                  ${analyticsData?.baseAsset.usdPrice.toFixed(3)}
+                  ${dynamicPrice.toFixed(3)}
                 </h1>
                 <span
                   className={`${
-                    (analyticsData?.baseAsset?.stats1h?.priceChange ?? 0) >= 0
+                    priceChange >= 0
                       ? "text-green-500"
                       : "text-red-500"
-                  } text-sm`}
+                  } text-sm transition-all duration-500`}
                 >
-                  {analyticsData?.baseAsset.stats1h?.priceChange?.toFixed(3)}%
+                  {priceChange.toFixed(3)}%
                 </span>
               </div>
               <div className="flex flex-row gap-[18px] md:gap-9">
                 <div className="flex flex-row gap-[3px]">
                   <div className=" bg-black p-1 rounded-[6px]">
-                    {/* text-[20px] font-normal md;leading-[1] uppercase tracking-[0] align-middle */}
                     <h1
                       className={`${geologica.className} font-normal text-[12px] lg:text-[20px] leading-[12px] lg:leading-[1] tracking-[0%] text-white`}
                     >
@@ -187,9 +167,9 @@ const page = () => {
                   </div>
                   <div className=" p-[2px] rounded-[6px]">
                     <h1
-                      className={`${geologica.className} font-normal text-[16px] lg:text-[24px] lg:leading-[1] leading-[16px] tracking-[0%]`}
+                      className={`${geologica.className} font-normal text-[16px] lg:text-[24px] lg:leading-[1] leading-[16px] tracking-[0%] transition-all duration-500`}
                     >
-                      {formatNumber(analyticsData?.baseAsset?.mcap ?? 0)}
+                      {formatNumber(dynamicMcap)}
                     </h1>
                   </div>
                 </div>
