@@ -115,58 +115,84 @@ const SwapPage = () => {
   });
 
   // Initialize tokens including the one from URL if provided
-  useEffect(() => {
-    const initializeTokens = async () => {
-      if (isInitialized) {
-        return;
-      }
+  // In your SwapPage component, modify the initialization useEffect as follows:
+useEffect(() => {
+  const initializeTokens = async () => {
+    // Only run if tokenAddress is available
+    if (!tokenAddress) {
+      console.log("No tokenAddress provided in URL");
+      return;
+    }
+    if (isInitialized || !tokens?.length) return;
 
-      if (tokens && tokens.length >= 2 && !isInitialized) {
-        let validFromToken: Token | undefined;
-        let validToToken: Token | undefined;
+    console.log("Initializing tokens. URL tokenAddress:", tokenAddress);
+    console.log("Tokens available:", tokens);
 
-        // If token address provided in URL, fetch it directly
-        if (tokenAddress) {
-          const specifiedToken = await fetchTokenByAddress(tokenAddress);
+    let validFromToken: Token | undefined;
+    let validToToken: Token | undefined;
+    let specifiedToken: Token | undefined;
 
-          if (specifiedToken) {
-            if (action === "sell") {
-              validFromToken = specifiedToken;
-              validToToken = tokens[1];
-            }
-            // Default or 'buy' action, set the specified token as toAsset
-            else {
-              validFromToken = tokens[0];
-              validToToken = specifiedToken;
-            }
-          }
-        }
+    // First try to find the token using an exact match.
+    specifiedToken = tokens.find(
+      (t) => t.address === tokenAddress
+    );
+    // If not found, try a lower-case comparison.
+    if (!specifiedToken) {
+      specifiedToken = tokens.find(
+        (t) => (t.address || "").toLowerCase() === tokenAddress.toLowerCase()
+      );
+    }
+    // If still not found, try fetching from API.
+    if (!specifiedToken) {
+      console.warn(`Token ${tokenAddress} not found locally. Fetching from API...`);
+      specifiedToken = await fetchTokenByAddress(tokenAddress);
+    }
+    // Final fallback: if not found, create a minimal token object.
+    if (!specifiedToken) {
+      console.warn(`Token ${tokenAddress} not found via API. Creating minimal token object.`);
+      specifiedToken = {
+        address: tokenAddress,
+        symbol: "UNK",
+        name: "Unknown Token",
+        logoURI: "",
+      };
+    }
 
-        // Fallback to default tokens if not found
-        if (!validFromToken || !validToToken) {
-          // Only set these if props weren't provided
-          if (!fromAsset)
-            validFromToken = tokens[0].address ? tokens[0] : undefined;
-          if (!toAsset)
-            validToToken = tokens[1].address ? tokens[1] : undefined;
-        }
+    // Look up USDC in the tokens list.
+    const usdcToken = tokens.find((t) => t.symbol === "USDC");
+    const defaultToken = usdcToken || tokens[0];
 
-        if (validFromToken && validToToken) {
-          setFromAsset({
-            ...validFromToken,
-            address: validFromToken.address || "",
-          });
-          setToAsset({
-            ...validToToken,
-            address: validToToken.address || "",
-          });
-          setIsInitialized(true);
-        }
-      }
-    };
+    // For a BUY action, we want from = USDC (or default) and to = specified token.
+    // For a SELL action, we want from = specified token and to = USDC.
+    if (action === "buy" && specifiedToken) {
+      validFromToken = defaultToken;
+      validToToken = specifiedToken;
+    } else if (action === "sell" && specifiedToken) {
+      validFromToken = specifiedToken;
+      validToToken = defaultToken;
+    } else {
+      // No valid URL parameter – fallback to defaults.
+      validFromToken = tokens[0];
+      validToToken = tokens[1] || tokens[0];
+    }
 
-    initializeTokens();
-  }, [tokens, isInitialized, tokenAddress, action, fromAsset, toAsset]);
+    console.log("Final validFromToken:", validFromToken);
+    console.log("Final validToToken:", validToToken);
+
+    setFromAsset({
+      ...validFromToken,
+      address: validFromToken.address || "",
+    });
+    setToAsset({
+      ...validToToken,
+      address: validToToken.address || "",
+    });
+    setIsInitialized(true);
+  };
+
+  initializeTokens();
+}, [tokens, isInitialized, tokenAddress, action]);
+
 
   const handleFromAssetChange = (token) => {
     if (token) {
