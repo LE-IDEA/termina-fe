@@ -48,12 +48,12 @@ const BalanceCard = () => {
             >
               ${loading ? "loading..." : totalPrice.toFixed(2)}
             </h1>
-            <div className="flex flex-row">
+          <div className="flex flex-row">
               <button title="change coin">
                 <Image src="/ArrowDown.svg" alt="prev" width={18} height={18} />
               </button>
-              <Image src="/USDC.png" alt="prev" width={52} height={32} className=" aspect-square" quality={100} />
-            </div>
+              <Image src="/usdcLogo.svg" alt="prev" width={58} height={48} className=" aspect-square" quality={100} />
+          </div>
           </div>
           <div className="flex  gap-1 ">
             <div className=" w-[8px] h-[8px] bg-[#47B105] rounded-full"></div>

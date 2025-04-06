@@ -30,7 +30,7 @@ const Page = () => {
         {!isConnected ? (
           <div className="mt-[12.5vh] w-fit mx-auto">
             <p className="text-gray-800  font-bold mb-8 mt-4">
-              Please connect your wallet to continue.
+              Please connect your wallet to continue with Termina.
             </p>
             <span className="flex justify-center">
             <ConnectButton/>
