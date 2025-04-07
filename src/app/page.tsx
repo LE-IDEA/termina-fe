@@ -21,25 +21,11 @@ const geologica = Geologica({
 
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 
+// Remove the logo from individual cards
 const OnboardingCard = ({ title, description, icon, currentStep, totalSteps }) => {
   return (
-    <div className="flex flex-col items-center justify-center max-w-2xl mx-auto px-8 py-12 h-full">
-      {/* Logo at the top */}
-      <div className="mb-12">
-        <Image src="/terminaMain.png" alt="Termina Logo" width={80} height={80} />
-      </div>
-      
-      {/* Step indicator */}
-      <div className="flex items-center justify-center mb-8 w-full">
-        <div className="flex space-x-2">
-          {Array.from({ length: totalSteps }).map((_, idx) => (
-            <div 
-              key={idx} 
-              className={`w-2 h-2 rounded-full ${idx === currentStep ? "bg-black" : "bg-gray-300"}`}
-            />
-          ))}
-        </div>
-      </div>
+    <div className="flex flex-col items-center justify-center px-8 py-12 h-full">
+      {/* Removed logo from here */}
       
       {/* Feature content */}
       <div className="text-center mb-8">
@@ -55,23 +41,8 @@ const OnboardingCard = ({ title, description, icon, currentStep, totalSteps }) =
 
 const FinalCard = ({ onConnect }) => {
   return (
-    <div className="flex flex-col items-center justify-center max-w-2xl mx-auto px-8 py-12 h-full">
-      {/* Logo at the top */}
-      <div className="mb-12">
-        <Image src="/terminaMain.png" alt="Termina Logo" width={80} height={80} />
-      </div>
-      
-      {/* Step indicator */}
-      <div className="flex items-center justify-center mb-8 w-full">
-        <div className="flex space-x-2">
-          {Array.from({ length: 5 }).map((_, idx) => (
-            <div 
-              key={idx} 
-              className={`w-2 h-2 rounded-full ${idx === 4 ? "bg-black" : "bg-gray-300"}`}
-            />
-          ))}
-        </div>
-      </div>
+    <div className="flex flex-col items-center justify-center px-8 py-12 h-full">
+      {/* Removed logo from here */}
       
       {/* Final content */}
       <div className="text-center mb-12">
@@ -103,34 +74,37 @@ const Page = () => {
   // Using your existing hook for real token data
   const { totalPrice, fungibleTokens, loading } = useFungibleTokens(isConnected ? address || "" : "");
   
-  // State for dynamic price simulation (similar to [tokenAddress]/page.tsx)
+  // State for dynamic price simulation
   const [dynamicPrice, setDynamicPrice] = useState(0);
   const [priceChange, setPriceChange] = useState(20); // Starting with your default +20%
   const [priceDirection, setPriceDirection] = useState(1); // 1 for up, -1 for down
 
-  // Onboarding content
+  
+  // Onboarding content with larger icons (size=120) and spacing added via margin classes
   const onboardingFeatures = [
     {
       title: "Ramp System",
       description: "Access an unlimited supply of stablecoins and fiat from our trusted ramp partners, simplifying your financial transactions.",
-      icon: <TrendingUpDown className="h-10 w-10 text-pink-500" />
+      icon: <TrendingUpDown size={120} className="text-pink-500 m-4" />
     },
     {
       title: "Seamless Token Swaps",
       description: "Forget about managing gas fees and complex UIs. We handle the complexity so you can focus on trading and swap between any tokens with just a few clicks.",
-      icon: <Shuffle className="h-10 w-10 text-blue-500" />
+      icon: <Shuffle size={120} className="text-blue-500 m-4" />
     },
     {
       title: "Beginner Friendly",
       description: "Designed specifically for newcomers to the crypto world. No jargon, just easy degening.",
-      icon: <Wallet className="h-10 w-10 text-green-500" />
+      icon: <Wallet size={120} className="text-green-500 m-4" />
     },
     {
       title: "Enhanced Security",
       description: "Your assets remain secure with our non-custodial approach and security-first design.",
-      icon: <Shield className="h-10 w-10 text-purple-500" />
+      icon: <Shield size={120} className="text-purple-500 m-4" />
     }
   ];
+
+
 
   // Initialize dynamic values once token data is loaded
   useEffect(() => {
@@ -139,35 +113,30 @@ const Page = () => {
     }
   }, [totalPrice, loading]);
 
-  // Simulate price fluctuations like in token page
+  // Simulate price fluctuations
   useEffect(() => {
     if (!dynamicPrice || !isConnected) return;
 
     const interval = setInterval(() => {
-      // Random percentage change between -0.2% and +0.2%
-      const randomChange = (Math.random() - 0.45) * 0.004; // Slight positive bias
+      const randomChange = (Math.random() - 0.45) * 0.004;
       
-      // Switch direction occasionally
       if (Math.random() > 0.7) {
         setPriceDirection(prev => prev * -1);
       }
 
-      // Calculate new price with slight bias based on direction
       const newPrice = dynamicPrice * (1 + (randomChange * priceDirection));
       setDynamicPrice(newPrice);
       
-      // Update price change percentage
       setPriceChange(prev => {
         const newChange = prev + randomChange * 100 * priceDirection;
-        // Limit to a reasonable range
-        return Math.max(15, Math.min(25, newChange)); // Keep between 15-25%
+        return Math.max(15, Math.min(25, newChange));
       });
-    }, 3000); // Update every 3 seconds
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [dynamicPrice, isConnected, priceDirection]);
 
-  // Fetching top tokens for Market Trends section
+  // Fetch top tokens for Market Trends section
   const [topTokens, setTopTokens] = useState<any[]>([]);
   const [topTokensLoading, setTopTokensLoading] = useState(true);
 
@@ -176,7 +145,7 @@ const Page = () => {
       try {
         const response = await fetch("https://datapi.jup.ag/v1/pools/popular/24h");
         const data = await response.json();
-        setTopTokens(data.pools.slice(0, 3)); // Get top 3 tokens
+        setTopTokens(data.pools.slice(0, 3));
       } catch (err) {
         console.error("Failed to fetch top tokens:", err);
       } finally {
@@ -221,8 +190,13 @@ const Page = () => {
   return (
     <main className="min-h-screen flex flex-col">
       {showOnboarding ? (
-        <div className="flex flex-col h-screen">
-          {/* Main content */}
+        <div className="relative flex flex-col h-screen">
+          {/* Logo at the top left */}
+          <div className="absolute top-4 left-4 z-50">
+            <Image src="/terminaMain.png" alt="Termina Logo" width={80} height={80} />
+          </div>
+          
+          {/* Main onboarding content */}
           <div className="flex-grow flex items-center justify-center">
             {currentStep < onboardingFeatures.length ? (
               <OnboardingCard 
@@ -235,8 +209,8 @@ const Page = () => {
             )}
           </div>
           
-          {/* Navigation buttons */}
-          <div className="py-8 px-8 flex justify-between max-w-2xl mx-auto w-full">
+          {/* Navigation buttons with progress dots inline */}
+          <div className="py-8 px-8 flex justify-between items-center max-w-2xl mx-auto w-full">
             {currentStep < onboardingFeatures.length ? (
               <>
                 <button 
@@ -245,6 +219,14 @@ const Page = () => {
                 >
                   {currentStep === 0 ? "Skip" : "Back"}
                 </button>
+                <div className="flex gap-2">
+                  {Array.from({ length: onboardingFeatures.length + 1 }).map((_, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`w-2 h-2 rounded-full ${idx === currentStep ? "bg-black" : "bg-gray-300"}`}
+                    />
+                  ))}
+                </div>
                 <button 
                   onClick={handleNext}
                   className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
@@ -266,7 +248,6 @@ const Page = () => {
         </div>
       ) : (
         <div className="max-w-7xl gap-[24px] flex flex-col mb-[200px] px-8 mx-auto mt-8">
-          {/* Only show search and connect button when user is connected */}
           {isConnected && (
             <div className="flex w-full justify-between">
               <div className="flex items-center">
@@ -278,40 +259,31 @@ const Page = () => {
 
           {!isConnected ? (
             <div className="mt-[12.5vh] w-fit mx-auto">
-              
               <span className="flex justify-center">
                 <ConnectButton />
               </span>
             </div>
           ) : (
             <>
-              <h1
-                className={`${instrumentSerif.className} font-bold text-[36px] leading-[36px] tracking-[0%] md:hidden`}
-              >
+              <h1 className={`${instrumentSerif.className} font-bold text-[36px] leading-[36px] tracking-[0%] md:hidden`}>
                 Gm mate
               </h1>
 
-              {/* Dynamic header with portfolio overview */}
               <div className="hidden md:flex w-full flex-row justify-between items-start mt-4 mb-6">
-                <h1
-                  className={`${instrumentSerif.className} font-bold text-[36px] leading-[36px] tracking-[0%]`}
-                >
+                <h1 className={`${instrumentSerif.className} font-bold text-[36px] leading-[36px] tracking-[0%]`}>
                   Gm mate
                 </h1>
                 
                 <div className="flex flex-row h-[36px] p-[6px] rounded-xl bg-[#EBEBEB]">
                   <Image src="/glasses.svg" alt="watchout" width={24} height={24} />
                   <div className="p-[6px]">
-                    <h1
-                      className={`${geologica.className} text-center font-normal text-[12px] leading-[12px] tracking-[0%]`}
-                    >
+                    <h1 className={`${geologica.className} text-center font-normal text-[12px] leading-[12px] tracking-[0%]`}>
                       Portfolio overview
                     </h1>
                   </div>
                 </div>
               </div>
 
-              {/* Main dashboard content */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-4">
                 <BalanceCard />
                 <HottestCard />
