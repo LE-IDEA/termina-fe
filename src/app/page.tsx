@@ -26,7 +26,7 @@ const OnboardingCard = ({ title, description, icon, currentStep, totalSteps }) =
     <div className="flex flex-col items-center justify-center max-w-2xl mx-auto px-8 py-12 h-full">
       {/* Logo at the top */}
       <div className="mb-12">
-        <Image src="/terminaMain.png" alt="Termina Logo" width={60} height={60} />
+        <Image src="/terminaMain.png" alt="Termina Logo" width={80} height={80} />
       </div>
       
       {/* Step indicator */}
@@ -58,7 +58,7 @@ const FinalCard = ({ onConnect }) => {
     <div className="flex flex-col items-center justify-center max-w-2xl mx-auto px-8 py-12 h-full">
       {/* Logo at the top */}
       <div className="mb-12">
-        <Image src="/terminaMain.png" alt="Termina Logo" width={60} height={60} />
+        <Image src="/terminaMain.png" alt="Termina Logo" width={80} height={80} />
       </div>
       
       {/* Step indicator */}
