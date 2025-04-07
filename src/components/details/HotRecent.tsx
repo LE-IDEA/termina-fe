@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Geologica, Instrument_Serif } from "next/font/google";
@@ -14,6 +15,10 @@ const HotRecent = () => {
   const [trendingTokens, setTrendingTokens] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Dynamic states for price simulation
+  const [dynamicPrices, setDynamicPrices] = useState<Record<string, number>>({});
+  const [dynamicChanges, setDynamicChanges] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchTokens = async () => {
@@ -22,7 +27,20 @@ const HotRecent = () => {
           "https://datapi.jup.ag/v1/pools/toptrending/5m"
         );
         const data = await response.json();
-        setTrendingTokens(data.pools.slice(0, 5)); // Get top 3 trending tokens
+        const fetchedTokens = data.pools.slice(0, 5);
+        setTrendingTokens(fetchedTokens);
+        
+        // Initialize dynamic prices and changes
+        const initialPrices: Record<string, number> = {};
+        const initialChanges: Record<string, number> = {};
+        
+        fetchedTokens.forEach((token: any) => {
+          initialPrices[token.id] = token.baseAsset.usdPrice;
+          initialChanges[token.id] = token.baseAsset.stats24h?.priceChange || 0;
+        });
+        
+        setDynamicPrices(initialPrices);
+        setDynamicChanges(initialChanges);
       } catch (err) {
         setError("Failed to fetch trending tokens.");
       } finally {
@@ -32,6 +50,49 @@ const HotRecent = () => {
 
     fetchTokens();
   }, []);
+  
+  // Simulate price fluctuations
+  useEffect(() => {
+    if (isLoading || trendingTokens.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setDynamicPrices(prev => {
+        const newPrices = { ...prev };
+        
+        trendingTokens.forEach(token => {
+          // Random percentage change between -0.2% and +0.2%
+          const isPositive = token.baseAsset.stats24h?.priceChange >= 0;
+          const randomChange = (Math.random() - (isPositive ? 0.4 : 0.6)) * 0.004;
+          
+          if (newPrices[token.id]) {
+            // Calculate new price
+            newPrices[token.id] = newPrices[token.id] * (1 + randomChange);
+          }
+        });
+        
+        return newPrices;
+      });
+      
+      setDynamicChanges(prev => {
+        const newChanges = { ...prev };
+        
+        trendingTokens.forEach(token => {
+          // Random change to percentage
+          const isPositive = token.baseAsset.stats24h?.priceChange >= 0;
+          const randomChange = (Math.random() - (isPositive ? 0.4 : 0.6)) * 0.15;
+          
+          if (newChanges[token.id] !== undefined) {
+            // Update change percentage
+            newChanges[token.id] = Math.max(-20, Math.min(20, newChanges[token.id] + randomChange));
+          }
+        });
+        
+        return newChanges;
+      });
+    }, 3500);
+    
+    return () => clearInterval(interval);
+  }, [isLoading, trendingTokens]);
 
   return (
     <div className="flex flex-col gap-[6px]">
@@ -45,23 +106,33 @@ const HotRecent = () => {
           </h1>
           <Image src="/Clock.svg" alt="Recent" width={12} height={12} />
         </div>
-        <h1
-          className={`${geologica.className} font-normal text-[10px] opacity-50 my-auto`}
-        >
-          See more
-        </h1>
+        <Link href="/activity/spot">
+          <h1
+            className={`${geologica.className} font-normal text-[10px] opacity-50 my-auto hover:opacity-70 cursor-pointer`}
+          >
+            See more
+          </h1>
+        </Link>
       </div>
 
       {/* Loading & Error Handling */}
-      {isLoading && <p>Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {isLoading && (
+        <div className="p-[12px] rounded-[18px] bg-[#ebebeb] flex items-center justify-center h-[120px]">
+          <div className="w-6 h-6 border-t-2 border-b-2 border-black rounded-full animate-spin"></div>
+        </div>
+      )}
+      {error && (
+        <div className="p-[12px] rounded-[18px] bg-[#ebebeb] flex items-center justify-center">
+          <p className="text-red-500">{error}</p>
+        </div>
+      )}
 
       {/* Trending Tokens */}
       {!isLoading &&
         !error &&
         trendingTokens.map((token) => (
           <Link href={`/${token.baseAsset.id}`} key={token.id}>
-            <div className="p-[12px] rounded-[18px] bg-[#ebebeb] flex flex-row justify-between">
+            <div className="p-[12px] rounded-[18px] bg-[#ebebeb] flex flex-row justify-between hover:shadow-md transition-all duration-300">
               <div className="flex flex-row gap-[10px]">
                 <img
                   src={token.baseAsset?.icon || "/default-token.svg"}
@@ -96,27 +167,27 @@ const HotRecent = () => {
                     height={16}
                   />
                   <h1
-                    className={`${geologica.className} font-medium text-[16px]`}
+                    className={`${geologica.className} font-medium text-[16px] transition-all duration-500`}
                   >
                     ${formatNumber(token.baseAsset?.mcap)}
                   </h1>
                 </div>
                 <div className="flex flex-row gap-[12px] justify-between">
                   <h1
-                    className={`${geologica.className} font-normal text-[10px] opacity-50`}
+                    className={`${geologica.className} font-normal text-[10px] opacity-50 transition-all duration-500`}
                   >
-                    {formatNumber(token.baseAsset?.usdPrice)} SOL
+                    {formatNumber(dynamicPrices[token.id] || token.baseAsset?.usdPrice)} SOL
                   </h1>
                   <h1
                     className={`${
                       geologica.className
                     } font-normal text-[10px] ${
-                      token.baseAsset?.stats24h?.priceChange >= 0
+                      (dynamicChanges[token.id] || token.baseAsset?.stats24h?.priceChange) >= 0
                         ? "text-green-500"
                         : "text-[#FF0004]"
-                    }`}
+                    } transition-all duration-500`}
                   >
-                    {token.baseAsset?.stats24h?.priceChange?.toFixed(2)}%
+                    {(dynamicChanges[token.id] || token.baseAsset?.stats24h?.priceChange)?.toFixed(2)}%
                   </h1>
                 </div>
               </div>
