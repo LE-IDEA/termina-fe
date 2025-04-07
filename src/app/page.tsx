@@ -57,7 +57,7 @@ const FinalCard = ({ onConnect }) => {
           Connect Wallet
         </button> */}
         <div className="w-full flex justify-center">
-        <appkit-button/>
+        <ConnectButton />
         </div>
 
       </div>
