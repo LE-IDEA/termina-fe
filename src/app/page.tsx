@@ -50,12 +50,16 @@ const FinalCard = ({ onConnect }) => {
         <p className={`${geologica.className} text-gray-600 mb-8 max-w-md`}>
           Connect your wallet to access all features and start managing your crypto assets.
         </p>
-        <button 
+        {/* <button 
           onClick={onConnect}
           className="bg-black text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors"
         >
           Connect Wallet
-        </button>
+        </button> */}
+        <div className="w-full flex justify-center">
+        <appkit-button/>
+        </div>
+
       </div>
     </div>
   );
