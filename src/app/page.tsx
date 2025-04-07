@@ -210,7 +210,8 @@ const Page = () => {
           </div>
           
           {/* Navigation buttons with progress dots inline */}
-          <div className="py-8 px-8 flex justify-between items-center max-w-2xl mx-auto w-full">
+          // Navigation buttons with progress dots inline - Updated positioning
+          <div className="py-8 px-8 flex justify-between items-center max-w-2xl mx-auto w-full mb-20"> {/* Added mb-20 to raise it up */}
             {currentStep < onboardingFeatures.length ? (
               <>
                 <button 
