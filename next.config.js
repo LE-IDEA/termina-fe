@@ -1,9 +1,9 @@
-module.exports = {
+// Using ES module syntax instead of CommonJS
+export default {
     output: 'export',
     distDir: '.next',
     reactStrictMode: true,
-    // This helps Next.js coexist with your Vite project
     experimental: {
       externalDir: true
     }
-  }
+  };
