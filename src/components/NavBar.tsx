@@ -1,92 +1,116 @@
-"use client";
-import Link from "next/link";
-import Image from "next/image";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
-import gradient from "../../public/gradient.png";
+import React from 'react';
+import { Button } from "@/components/ui/button";
+import { Twitter, MessageCircle, Menu, X } from "lucide-react";
+import { useState } from 'react';
 
-interface NavBarProps {
-  isHome?: boolean;
-}
+const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-export default function NavBar({ isHome = true }: NavBarProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   return (
-    <div className="w-11/12 md:max-w-6xl relative mx-auto group">
-      {/* <div className="absolute -bottom-40 bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 z-0 p-4"></div> */}
-      <div className="absolute inset-0 w-3/4 mx-auto left-0 right-0 rounded-full h-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
-        <Image src={gradient} alt="" className="w-full h-full object-cover" />
-      </div>
-      <nav
-        className={`relative z-10 flex bg-white items-center justify-between p-4 px-6 mt-4 md:mt-6 border ${
-          isOpen ? "rounded-t-[36px] border-b-0" : "rounded-[36px] shadow-md"
-        }  `}
-      >
-        <Image src="/Termina-logo.png" alt="" width={120} height={100} />
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
+      <div className="container mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <img
+              src="/Termina-logo.png"
+              alt="Termina Logo"
+              className="h-7 w-auto object-contain"
+            />
+          </div>
 
-        <div className="flex items-center space-x-12">
-          <Link
-            href="https://x.com/use_Termina/status/1883078030907908389"
-            className="hidden md:block font-medium cursor-pointer hover:text-blue-600"
-          >
-            About
-          </Link>
-
-          <Link
-            href="#"
-            className="hidden md:block font-medium cursor-pointer hover:text-blue-600"
-          >
-            Features
-          </Link>
-
-          <Link
-            href="#"
-            className="hidden md:block font-medium cursor-pointer hover:text-blue-600"
-          >
-            White Paper
-          </Link>
-          <div></div>
-        </div>
-
-        {/* <MobileNav /> */}
-        <div className="md:hidden">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="p-2"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-
-          {isOpen && (
-            <div className="absolute w-full top-[80px] left-0 right-0 bg-white border-b rounded-b-[36px] shadow-md p-4 space-y-4">
-              <Link
-                href="https://x.com/use_Termina/status/1883078030907908389"
-                className="block py-2 font-medium hover:text-blue-600"
-                onClick={() => setIsOpen(false)}
+          
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-6">
+            <a href="#features" className="text-sm font-medium hover:text-gray-600 transition-colors">
+              Features
+            </a>
+            <a href="#how-it-works" className="text-sm font-medium hover:text-gray-600 transition-colors">
+              How It Works
+            </a>
+            <div className="flex items-center space-x-3">
+              <a 
+                href="https://twitter.com/use_Termina" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
               >
-                About
-              </Link>
-
-              <Link
-                href="#"
-                className="block py-2 font-medium hover:text-blue-600"
-                onClick={() => setIsOpen(false)}
+                <Twitter size={18} />
+              </a>
+              <a 
+                href="https://t.me/+EJaqYezHnQs3YjM0" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
               >
-                Features
-              </Link>
+                <MessageCircle size={18} />
+              </a>
+              <a href="https://app.termina.fun" target="_blank" rel="noopener noreferrer">
+                <Button className="ml-2 bg-black text-white hover:bg-gray-800">
+                  Get Started
+                </Button>
+              </a>
 
-              <Link
-                href="#"
-                className="block py-2 font-medium hover:text-blue-600"
-                onClick={() => setIsOpen(false)}
-              >
-                White Paper
-              </Link>
             </div>
-          )}
+          </nav>
+          
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={toggleMenu} 
+            className="md:hidden p-2 rounded-md hover:bg-gray-100"
+          >
+            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
-      </nav>
-    </div>
+        
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 space-y-4">
+            <a 
+              href="#features" 
+              className="block py-2 text-sm font-medium hover:text-gray-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Features
+            </a>
+            <a 
+              href="#how-it-works" 
+              className="block py-2 text-sm font-medium hover:text-gray-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              How It Works
+            </a>
+            <div className="flex items-center space-x-4 pt-2">
+              <a 
+                href="https://twitter.com/use_Termina" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <Twitter size={18} />
+              </a>
+              <a 
+                href="https://t.me/+EJaqYezHnQs3YjM0" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <MessageCircle size={18} />
+              </a>
+            </div>
+            <a href="https://app.termina.fun" target="_blank" rel="noopener noreferrer">
+                <Button className="ml-2 bg-black text-white hover:bg-gray-800">
+                  Get Started
+                </Button>
+              </a>
+          </div>
+        )}
+      </div>
+    </header>
   );
-}
+};
+
+export default Navbar;

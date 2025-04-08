@@ -1,86 +1,78 @@
-import Link from "next/link";
-import Image from "next/image";
-import logo from "../../public/Logo-white.png";
-import { Instrument_Serif, Geologica } from "next/font/google";
-import { Button } from "./ui/button";
-import WaitlistForm from "./landing/WaitlistForm";
 
-const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
+import React from 'react';
+import { Twitter, MessageCircle, Github } from "lucide-react";
 
-
-export default function Footer() {
+const Footer = () => {
   return (
-    <footer className="w-full py-12 sm:py-20 bg-zinc-950">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between flex-col py-4 min-[500px]:py-8 gap-8 min-[500px]:gap-16 lg:gap-0 md:flex-row">
-          <div>
-            <div className="flex lg:flex-row pb-8 gap-7 lg:gap-0 ">
-              <Link href="/" className="text-4xl font-bold text-white">
-                <Image src={logo} alt="Termina-logo" className="w-32 lg:w-52" />
-              </Link>
-            </div>
-
-            <div className="flex items-start flex-row gap-8 sm:gap-12 xl:gap-24">
-              <div className="block">
-                <ul className="grid text-gray-100 gap-4 min-[500px]:gap-6 min-[500px]:text-left">
-                  <li>
-                    <Link
-                      href="https://x.com/use_Termina/status/1883078030907908389"
-                      target="blank"
-                      className="hover:text-white transition-colors"
-                    >
-                      About
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#"
-                      className="hover:text-white transition-colors"
-                    >
-                      Features
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#"
-                      className="hover:text-white transition-colors"
-                    >
-                     White Paper
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="https://x.com/use_Termina"
-                      target="blank"
-                      className="hover:text-white transition-colors"
-                    >
-                      Twitter(X)
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
+    <footer className="bg-gray-50 pt-12 pb-8">
+      <div className="container mx-auto px-6">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-12">
+          <div className="flex items-center space-x-2 mb-6 md:mb-0">
+            <img 
+              src="public\Termina-logo.png" 
+              alt="Termina Logo" 
+              className="w-16 h-16 object-contain"
+            />
+            
           </div>
-          <div className="block my-8 lg:max-w-md">
-            <h3 className={`${instrumentSerif.className} font-semibold text-4xl text-white leading-9 mb-4 text-center md:text-left`}>
-            100x Degen Journey Starts Now
-            </h3>
-            <p className="text-gray-300 mb-8 text-center md:text-left">
-            Join waitlist today to stay ahead of 90% of Degens and stay up to date with new features releases.
-            </p>
-
-            <div className="space-y-2">
-              {/* <Button
-                  type="submit"
-                  className="bg-blue-500 text-white rounded-xl w-full text-lg h-10 py-2 font-medium px-6"
-                >
-                  Join Waitlist
-                </Button> */}
-                <WaitlistForm initialFormState="join"/>
-            </div>
+          
+          <div className="flex gap-6 flex-wrap justify-center">
+            <a href="#" className="text-gray-600 hover:text-black transition-colors">
+              Home
+            </a>
+            <a href="#features" className="text-gray-600 hover:text-black transition-colors">
+              Features
+            </a>
+            <a href="#how-it-works" className="text-gray-600 hover:text-black transition-colors">
+              How It Works
+            </a>
+            <a href="#" className="text-gray-600 hover:text-black transition-colors">
+              Terms
+            </a>
+            <a href="#" className="text-gray-600 hover:text-black transition-colors">
+              Privacy
+            </a>
           </div>
+          
+          <div className="flex space-x-4 mt-6 md:mt-0">
+            <a 
+              href="https://twitter.com/use_Termina"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+            >
+              <Twitter size={20} />
+            </a>
+            <a 
+              href="https://t.me/+EJaqYezHnQs3YjM0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+            >
+              <MessageCircle size={20} />
+            </a>
+            <a 
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+            >
+              <Github size={20} />
+            </a>
+          </div>
+        </div>
+        
+        <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center">
+          <p className="text-gray-500 text-sm">
+            © {new Date().getFullYear()} Termina. All rights reserved.
+          </p>
+          <p className="text-gray-500 text-sm mt-2 md:mt-0">
+            Built with ❤️ for the DeFi community
+          </p>
         </div>
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;
