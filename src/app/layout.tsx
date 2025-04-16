@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ReownProvider } from "../providers/reownProvider";
 import QueryProvider from "@/providers/queryProvider";
 import { Toaster } from "react-hot-toast";
 import Sidebar from "@/components/SideBar";
 import DownNav from "@/components/details/DownNav";
+import PrivyProviderWrapper from "@/providers/privy-provider";
 
 export const metadata: Metadata = {
   title: "Termina",
@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`bg-gray-50 antialiased`}>
         <QueryProvider>
-          <ReownProvider>
+          <PrivyProviderWrapper>
             <div className="flex flex-col min-h-screen bg-gray-50">
               <Sidebar />
               <main className="flex-1 lg:ml-[220px] md:ml-[80px]">
@@ -30,7 +30,7 @@ export default function RootLayout({
               <Toaster />
               <DownNav/>
             </div>
-          </ReownProvider>
+          </PrivyProviderWrapper>
         </QueryProvider>
       </body>
     </html>

@@ -4,11 +4,8 @@ import { Geologica, Instrument_Serif } from "next/font/google";
 import SwapSlippage from "@/components/details/SwapSlippage";
 import { useState, useEffect } from "react";
 
-import {
-  useAppKitConnection,
-  type Provider,
-} from "@reown/appkit-adapter-solana/react";
-import { useAppKitProvider } from "@reown/appkit/react";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { usePrivy } from "@privy-io/react-auth";
 
 import useTokens from "@/hooks/useTokens";
 import TokenSearchModal from "@/components/app-components/TokenModal";
@@ -39,10 +36,55 @@ interface SwapPageProps {
 }
 
 const SwapPage = () => {
-  const { connection } = useAppKitConnection();
-  const { walletProvider } = useAppKitProvider<Provider>("solana");
-  const { tokens } = useTokens();
+  const [connection, setConnection] = useState<Connection | null>(null);
+  const { user, authenticated, ready } = usePrivy();
+  const walletProvider = user?.wallet;
   const router = useRouter();
+  const { tokens } = useTokens();
+  
+  // Check if wallet is Solana
+  const [isSolanaWallet, setIsSolanaWallet] = useState<boolean>(false);
+  
+  // Check the wallet chain when it's available
+  useEffect(() => {
+    const checkWalletChain = async () => {
+      if (walletProvider) {
+        try {
+          // Check for Solana address format (base58 encoded, typically 32-44 chars)
+          const isSolana = walletProvider.address && 
+            typeof walletProvider.address === 'string' &&
+            walletProvider.address.length >= 32 && 
+            walletProvider.address.length <= 44;
+          
+          setIsSolanaWallet(!!isSolana);
+          
+          if (!isSolana && authenticated) {
+            toast.error("Please connect a Solana wallet");
+          }
+        } catch (error) {
+          console.error("Error checking wallet chain:", error);
+          setIsSolanaWallet(false);
+        }
+      } else {
+        setIsSolanaWallet(false);
+      }
+    };
+    
+    checkWalletChain();
+  }, [walletProvider, authenticated]);
+
+  // Initialize Connection
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Use endpoint from env or fallback to mainnet
+      const endpoint = 
+        process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 
+        "https://api.mainnet-beta.solana.com";
+      
+      const conn = new Connection(endpoint, "confirmed");
+      setConnection(conn);
+    }
+  }, []);
 
   // State for URL parameters
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
@@ -94,13 +136,6 @@ const SwapPage = () => {
     }
   };
 
-  // Sol balance hook to update balance post-swap
-  const { fetchSolBalance } = useSolBalance({
-    connection: connection || null,
-    publicKey: walletProvider?.publicKey || null,
-  });
-
-  // Use the useSwap hook
   const {
     quoteResponse,
     estimatedFee,
@@ -168,21 +203,21 @@ const SwapPage = () => {
     initializeTokens();
   }, [tokens, isInitialized, tokenAddress, action, fromAsset, toAsset]);
 
-  const handleFromAssetChange = (token) => {
+  const handleFromAssetChange = (token: Token) => {
     if (token) {
       setFromAsset(token);
       setFromAmount("");
     }
   };
 
-  const handleToAssetChange = (token) => {
+  const handleToAssetChange = (token: Token) => {
     if (token) {
       setToAsset(token);
       setFromAmount("");
     }
   };
 
-  const handleFromValueChange = (event) => {
+  const handleFromValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     if (value === "" || (!isNaN(Number(value)) && Number(value) >= 0)) {
       setFromAmount(value);
@@ -204,29 +239,6 @@ const SwapPage = () => {
     setFromAmount(toAmount || "");
   };
 
-  // Execute swap using the signAndSendTransaction method from useSwap
-  async function handleSwap() {
-    if (!walletProvider || !connection || !quoteResponse) {
-      toast.error("Missing required dependencies for swap");
-      return;
-    }
-
-    const txid = await signAndSendTransaction();
-
-    if (txid) {
-      fetchSolBalance();
-      setTransactionID(txid);
-      setFromAmount("");
-    }
-  }
-
-  const isSwapDisabled =
-    !fromAmount ||
-    !toAmount ||
-    Number(fromAmount) <= 0 ||
-    toAsset?.address === fromAsset?.address ||
-    swapping;
-
   // Calculate total with fee
   const calculateTotal = () => {
     if (!fromAmount || !estimatedFee) return "0.00";
@@ -242,7 +254,7 @@ const SwapPage = () => {
       : null;
 
   // Popular token addresses mapping
-  const popularTokenAddresses = {
+  const popularTokenAddresses: Record<string, string> = {
     SOL: "So11111111111111111111111111111111111111112",
     USDC: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     USDT: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
@@ -285,6 +297,44 @@ const SwapPage = () => {
     }
   };
 
+  // Execute swap using the signAndSendTransaction method from useSwap
+  async function handleSwap() {
+    if (!authenticated) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+    
+    if (!isSolanaWallet) {
+      toast.error("Please connect a Solana wallet");
+      return;
+    }
+    
+    if (!walletProvider || !connection || !quoteResponse) {
+      toast.error("Missing required dependencies for swap");
+      return;
+    }
+
+    try {
+      const txid = await signAndSendTransaction();
+
+      if (txid) {
+        setTransactionID(txid);
+        setFromAmount("");
+      }
+    } catch (error: any) {
+      console.error("Error during swap:", error);
+      toast.error(`Swap failed: ${error?.message || "Unknown error"}`);
+    }
+  }
+
+  const isSwapDisabled =
+    !fromAmount ||
+    !toAmount ||
+    Number(fromAmount) <= 0 ||
+    toAsset?.address === fromAsset?.address ||
+    !isSolanaWallet ||
+    swapping;
+
   return (
     <main className="max-w-7xl gap-[24px] flex flex-col mb-[200px] px-8 mx-auto mt-8">
       <div className="flex w-full justify-between">
@@ -293,161 +343,182 @@ const SwapPage = () => {
         </div>
         <ConnectButton />
       </div>
-      <section className="md:flex md:flex-row md:gap-4 pxl:gap-6 mx-auto mt-8">
-        <section className="gap-4 flex flex-col lgg:w-[444px] pxl:w-[604px]">
-          <div className="flex flex-row gap-2 mb-2 flex-wrap">
-            {popularTokens.map((symbol) => (
-              <button
-                key={symbol}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  fromAsset?.symbol === symbol
-                    ? "bg-blue-500 text-white"
-                    : toAsset?.symbol === symbol
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-200"
-                }`}
-                onClick={() => handlePopularTokenSelect(symbol)}
-              >
-                {symbol}
-              </button>
-            ))}
-          </div>
-
-          {/* solanabox */}
-          <section className="flex flex-col gap-[6px] rounded-[12px] p-[2px] bg-[#ebebeb] border-[#ebebeb] md:w-[320px] lgg:w-[444px] pxl:w-[604px]">
-            {/* From token */}
-            <div className="flex flex-col p-[10px] gap-4 rounded-[12px] bg-white pxl:w-[600px]">
-              <div className="flex flex-row h-[48px] p-[6px] gap-[10px] justify-between my-auto">
-                <div className="flex flex-row h-[48px] gap-[10px]">
-                  <TokenSearchModal
-                    onSelect={handleFromAssetChange}
-                    defaultToken={fromAsset}
-                  />
-                </div>
-                <input
-                  className={`${instrumentSerif.className} w-[130px] font-normal text-4xl leading-none tracking-normal text-right outline-none`}
-                  placeholder="0.0"
-                  title="Enter amount"
-                  value={fromAmount}
-                  onChange={handleFromValueChange}
-                />
-              </div>
-
-              {/* interswap */}
-              <button
-                className="items-center justify-center"
-                title="Swap direction"
-                onClick={handleSwapDirection}
-              >
-                <Image
-                  src="/Interswap.svg"
-                  alt="Interchange"
-                  width={24}
-                  height={24}
-                  className="mx-auto"
-                />
-              </button>
-
-              {/* To token */}
-              <div className="flex flex-row h-[48px] p-[6px] gap-[10px] justify-between">
-                <div className="flex flex-row h-[48px] gap-[10px]">
-                  <TokenSearchModal
-                    onSelect={handleToAssetChange}
-                    defaultToken={toAsset}
-                  />
-                </div>
-                <div
-                  className={`${instrumentSerif.className} w-[130px] font-normal text-4xl leading-none tracking-normal text-right`}
+      
+      {!authenticated ? (
+        <div className="mt-[12.5vh] w-fit mx-auto">
+          <p className="text-gray-800 font-bold mb-8 mt-4">
+            Please connect your wallet to use the swap feature.
+          </p>
+          <span className="flex justify-center">
+            <ConnectButton />
+          </span>
+        </div>
+      ) : !isSolanaWallet ? (
+        <div className="mt-[12.5vh] w-fit mx-auto">
+          <p className="text-gray-800 font-bold mb-8 mt-4">
+            Please connect a Solana wallet to use the swap feature.
+          </p>
+          <span className="flex justify-center">
+            <ConnectButton />
+          </span>
+        </div>
+      ) : (
+        <section className="md:flex md:flex-row md:gap-4 pxl:gap-6 mx-auto mt-8">
+          <section className="gap-4 flex flex-col lgg:w-[444px] pxl:w-[604px]">
+            <div className="flex flex-row gap-2 mb-2 flex-wrap">
+              {popularTokens.map((symbol) => (
+                <button
+                  key={symbol}
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    fromAsset?.symbol === symbol
+                      ? "bg-blue-500 text-white"
+                      : toAsset?.symbol === symbol
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-200"
+                  }`}
+                  onClick={() => handlePopularTokenSelect(symbol)}
                 >
-                  {toAmount || "0.0"}
-                </div>
-              </div>
+                  {symbol}
+                </button>
+              ))}
             </div>
 
-            <div className="flex flex-row h-[32px] p-[10px] justify-between rounded-br-[12px] rounded-bl-[12px] pxl:w-[604px]">
-              <div className="flex flex-row items-center w-[56px] h-[12px] gap-[4px]">
-                <Image
-                  src="/circleDetail.svg"
-                  alt="detail"
-                  width={12}
-                  height={12}
-                />
-                <div className="flex flex-row my-auto h-[8px] gap-[4px]">
+            {/* solanabox */}
+            <section className="flex flex-col gap-[6px] rounded-[12px] p-[2px] bg-[#ebebeb] border-[#ebebeb] md:w-[320px] lgg:w-[444px] pxl:w-[604px]">
+              {/* From token */}
+              <div className="flex flex-col p-[10px] gap-4 rounded-[12px] bg-white pxl:w-[600px]">
+                <div className="flex flex-row h-[48px] p-[6px] gap-[10px] justify-between my-auto">
+                  <div className="flex flex-row h-[48px] gap-[10px]">
+                    <TokenSearchModal
+                      onSelect={handleFromAssetChange}
+                      defaultToken={fromAsset}
+                    />
+                  </div>
+                  <input
+                    className={`${instrumentSerif.className} w-[130px] font-normal text-4xl leading-none tracking-normal text-right outline-none`}
+                    placeholder="0.0"
+                    title="Enter amount"
+                    value={fromAmount}
+                    onChange={handleFromValueChange}
+                  />
+                </div>
+
+                {/* interswap */}
+                <button
+                  className="items-center justify-center"
+                  title="Swap direction"
+                  onClick={handleSwapDirection}
+                >
+                  <Image
+                    src="/Interswap.svg"
+                    alt="Interchange"
+                    width={24}
+                    height={24}
+                    className="mx-auto"
+                  />
+                </button>
+
+                {/* To token */}
+                <div className="flex flex-row h-[48px] p-[6px] gap-[10px] justify-between">
+                  <div className="flex flex-row h-[48px] gap-[10px]">
+                    <TokenSearchModal
+                      onSelect={handleToAssetChange}
+                      defaultToken={toAsset}
+                    />
+                  </div>
+                  <div
+                    className={`${instrumentSerif.className} w-[130px] font-normal text-4xl leading-none tracking-normal text-right`}
+                  >
+                    {toAmount || "0.0"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-row h-[32px] p-[10px] justify-between rounded-br-[12px] rounded-bl-[12px] pxl:w-[604px]">
+                <div className="flex flex-row items-center w-[56px] h-[12px] gap-[4px]">
+                  <Image
+                    src="/circleDetail.svg"
+                    alt="detail"
+                    width={12}
+                    height={12}
+                  />
+                  <div className="flex flex-row my-auto h-[8px] gap-[4px]">
+                    <h1
+                      className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}
+                    >
+                      fee:
+                    </h1>
+                    <h1
+                      className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}
+                    >
+                      0.5%
+                    </h1>
+                  </div>
+                </div>
+                <div className="flex flex-row h-[8px] gap-[4px] my-auto">
                   <h1
                     className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}
                   >
-                    fee:
+                    Total:
                   </h1>
                   <h1
                     className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}
                   >
-                    0.5%
+                    {calculateTotal()}
                   </h1>
                 </div>
               </div>
-              <div className="flex flex-row h-[8px] gap-[4px] my-auto">
-                <h1
-                  className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}
-                >
-                  Total:
-                </h1>
-                <h1
-                  className={`${geologica.className} font-medium text-xs leading-[8px] tracking-normal`}
-                >
-                  {calculateTotal()}
-                </h1>
+            </section>
+
+            {/* confirm button */}
+            <button
+              className={`h-[55px] gap-[10px] rounded-[12px] pt-[18px] pr-[24px] pb-[18px] pl-[24px] bg-[#0077FF] ${
+                isSwapDisabled ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              title="Confirm Swap"
+              onClick={handleSwap}
+              disabled={isSwapDisabled || swapping}
+            >
+              <h1 className={`${geologica.className} text-white`}>
+                {swapping ? "Swapping..." : "Confirm"}
+              </h1>
+            </button>
+
+            {/* Rate display when available */}
+            {swapRate && (
+              <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
+                <div className="h-[23px]">
+                  <h1
+                    className={`${geologica.className} text-black font-medium text-base leading-[22.5px] tracking-normal`}
+                  >
+                    Rate: 1 {fromAsset?.name} = {swapRate} {toAsset?.name}
+                  </h1>
+                </div>
               </div>
-            </div>
+            )}
+
+            {transactionID && (
+              <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
+                <div className="h-[23px]">
+                  <h1
+                    className={`${geologica.className} font-medium text-base leading-[22.5px] tracking-normal`}
+                  >
+                    Tx :{" "}
+                    <Link
+                      target="blank"
+                      href={`https://solscan.io/tx/${transactionID}`}
+                    >
+                      https://solscan.io/tx/${transactionID.slice(0, 10)}
+                    </Link>
+                  </h1>
+                </div>
+              </div>
+            )}
           </section>
 
-          {/* confirm button */}
-          <button
-            className={`h-[55px] gap-[10px] rounded-[12px] pt-[18px] pr-[24px] pb-[18px] pl-[24px] bg-[#0077FF] ${
-              isSwapDisabled ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            title="Confirm Swap"
-            onClick={handleSwap}
-            disabled={isSwapDisabled || swapping}
-          >
-            <h1 className={`${geologica.className} text-white`}>
-              {swapping ? "Swapping..." : "Confirm"}
-            </h1>
-          </button>
-
-          {/* Rate display when available */}
-          {swapRate && (
-            <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
-              <div className="h-[23px]">
-                <h1
-                  className={`${geologica.className} text-black font-medium text-base leading-[22.5px] tracking-normal`}
-                >
-                  Rate: 1 {fromAsset?.name} = {swapRate} {toAsset?.name}
-                </h1>
-              </div>
-            </div>
-          )}
-
-          {transactionID && (
-            <div className="flex flex-row h-[64px] gap-[10px] rounded-[18px] p-[12px] bg-[#ebebeb]">
-              <div className="h-[23px]">
-                <h1
-                  className={`${geologica.className} font-medium text-base leading-[22.5px] tracking-normal`}
-                >
-                  Tx :{" "}
-                  <Link
-                    target="blank"
-                    href={`https://solscan.io/tx/${transactionID}`}
-                  >
-                    https://solscan.io/tx/${transactionID.slice(0, 10)}
-                  </Link>
-                </h1>
-              </div>
-            </div>
-          )}
+          <SwapSlippage />
         </section>
-
-        <SwapSlippage />
-      </section>
+      )}
     </main>
   );
 };

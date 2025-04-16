@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Geologica, Instrument_Serif } from "next/font/google";
 import useFungibleTokens from "@/hooks/useFungibleTokes";
-import { useAppKitAccount } from "@reown/appkit/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { formatNumber } from "@/utils";
 import Link from "next/link";
 
@@ -10,8 +10,9 @@ const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["l
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 
 const HotList = () => {
-    const { address } = useAppKitAccount();
-  const { fungibleTokens, loading, error } = useFungibleTokens(address || "");
+  const { user } = usePrivy();
+  const walletAddress = user?.wallet?.address || "";
+  const { fungibleTokens, loading, error } = useFungibleTokens(walletAddress || "");
   console.log(fungibleTokens);
   
 
@@ -28,11 +29,12 @@ const HotList = () => {
 
       {/* Loading & Error Handling */}
       {loading && <p>Loading tokens...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {fungibleTokens.length > 0 && error && <p className="text-red-500">{error}</p>}
 
       {/* Display User's Tokens */}
       {!loading &&
         !error &&
+        fungibleTokens.length > 0 &&
         fungibleTokens.slice(0, 5).map((token) => (
           <Link key={token.id} href={`/${token.id}`}>
           <div className="p-[12px] rounded-[18px] bg-[#ebebeb] flex flex-row justify-between">
@@ -69,6 +71,12 @@ const HotList = () => {
           </div>
           </Link>
         ))}
+
+      {fungibleTokens.length === 0 && (
+        <div className="p-[12px] rounded-[18px] bg-[#ebebeb] flex flex-row justify-between">
+          <h1 className={`${geologica.className} font-normal text-[16px]`}>No tokens found</h1>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,13 +1,11 @@
 "use client";
 
-import { useAppKitAccount } from "@reown/appkit/react";
-import { useDisconnect } from "@reown/appkit/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 
 export default function ConnectButton() {
-  const { isConnected } = useAppKitAccount();
-  const { disconnect } = useDisconnect();
+  const { authenticated, logout, login } = usePrivy();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -16,16 +14,22 @@ export default function ConnectButton() {
 
   return (
     <>
-      {isClient && isConnected ? (
+      {isClient && authenticated ? (
         <Button
-          onClick={() => disconnect()}
+          onClick={() => logout()}
           variant="outline"
           className="h-[2rem] min-w-[4rem] gap-2 border border-red-600 px-4 py-3 font-bold bg-red-500 text-background lg:min-w-[8rem] rounded-full "
         >
           Disconnect
         </Button>
       ) : (
-        <appkit-button/>
+        <Button
+          onClick={() => login()}
+          variant="outline"
+          className="h-[2rem] min-w-[4rem] gap-2 border px-4 py-3 font-bold bg-primary text-background lg:min-w-[8rem] rounded-full"
+        >
+          Connect
+        </Button>
       )}
     </>
   );

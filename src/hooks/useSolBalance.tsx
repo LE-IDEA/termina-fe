@@ -3,7 +3,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 
 interface SolBalanceProps {
   connection: Connection | null;
-  publicKey: PublicKey | null;
+  publicKey: PublicKey | null | string;
 }
 
 interface SolBalanceResult {
@@ -14,13 +14,29 @@ interface SolBalanceResult {
   error: Error | null;
 }
 
+// Helper function to safely convert string to PublicKey
+function safePublicKey(value: PublicKey | string | null): PublicKey | null {
+  if (!value) return null;
+  if (value instanceof PublicKey) return value;
+  
+  try {
+    return new PublicKey(value);
+  } catch (error) {
+    console.error("Invalid Solana address format:", error);
+    return null;
+  }
+}
+
 export function useSolBalance({
   connection,
-  publicKey,
+  publicKey: inputPublicKey,
 }: SolBalanceProps): SolBalanceResult {
   const [solBalance, setSolBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
+  
+  // Safely convert to PublicKey
+  const publicKey = safePublicKey(inputPublicKey);
 
   const fetchSolBalance = useCallback(async (): Promise<number> => {
     if (!connection || !publicKey) {
@@ -60,7 +76,7 @@ export function useSolBalance({
     } else {
       setSolBalance(0);
     }
-  }, []);
+  }, [publicKey, fetchSolBalance]);
 
   return {
     solBalance,

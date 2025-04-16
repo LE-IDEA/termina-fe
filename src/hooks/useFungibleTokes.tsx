@@ -51,8 +51,9 @@ const useFungibleTokens = (walletAddress: string) => {
             item.interface === "FungibleToken" || item.interface === "FungibleAsset" 
         );
 
-        setFungibleTokens(items);
-
+        if (items.length > 0) {
+          setFungibleTokens(items);
+        }
 
         const nativeBalancePrice = data.result.nativeBalance.total_price || 0;
         const total = items.reduce((sum, token) => {

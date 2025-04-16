@@ -1,21 +1,29 @@
 import { useState, useCallback } from "react";
-import { VersionedTransaction } from "@solana/web3.js";
+import { VersionedTransaction, PublicKey } from "@solana/web3.js";
 import toast from "react-hot-toast";
-import debounce from "lodash/debounce";
+import { debounce } from "@/utils";
 
-/**
- * Custom hook to handle token swaps with fee sponsorship on Solana
- * @param {Object} params - Configuration parameters
- * @param {Object} params.connection - Solana connection object
- * @param {Object} params.walletProvider - Wallet adapter with publicKey and signTransaction methods
- * @returns {Object} - Swap functions and state
- */
-export function useSwap({ connection, walletProvider }) {
+interface SwapHookParams {
+  connection: any;
+  walletProvider: any;
+}
+
+interface SwapHookResult {
+  quoteResponse: any;
+  estimatedFee: number;
+  swapping: boolean;
+  toAmount: string;
+  getQuote: (currentAmount: number, fromAsset: any, toAsset: any) => Promise<void>;
+  debounceQuoteCall: (currentAmount: number, fromAsset: any, toAsset: any) => void;
+  signAndSendTransaction: () => Promise<string | null>;
+}
+
+export function useSwap({ connection, walletProvider }: SwapHookParams): SwapHookResult {
   // State management
-  const [quoteResponse, setQuoteResponse] = useState(null);
-  const [estimatedFee, setEstimatedFee] = useState(0.001);
-  const [swapping, setSwapping] = useState(false);
-  const [toAmount, setToAmount] = useState("");
+  const [quoteResponse, setQuoteResponse] = useState<any>(null);
+  const [estimatedFee, setEstimatedFee] = useState<number>(0.001);
+  const [swapping, setSwapping] = useState<boolean>(false);
+  const [toAmount, setToAmount] = useState<string>("");
 
   // Fee sponsor address - the account that will pay for the transaction
   const SPONSOR_PUBLIC_KEY = process.env.NEXT_PUBLIC_SPONSOR_PUBLIC_KEY || "Gj1tcyr5858jdUNxcqYUMnWJJFy4YpRYsyqf9zLmMQa";
@@ -28,8 +36,8 @@ export function useSwap({ connection, walletProvider }) {
    * @param {Object} quote - Quote response from Jupiter API
    * @returns {number} - Estimated fee in SOL
    */
-  async function getEstimatedSwapFee(quote) {
-    if (!quote || !connection || !walletProvider?.publicKey) {
+  async function getEstimatedSwapFee(quote: any): Promise<number> {
+    if (!quote || !connection || !walletProvider?.address) {
       return 0.001; // Default minimum fee
     }
     
@@ -39,7 +47,7 @@ export function useSwap({ connection, walletProvider }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           quoteResponse: quote,
-          userPublicKey: walletProvider.publicKey.toString(),
+          userPublicKey: walletProvider.address,
           wrapAndUnwrapSol: true,
           priorityLevel:"high"
         }),
@@ -75,11 +83,8 @@ export function useSwap({ connection, walletProvider }) {
 
   /**
    * Fetches a swap quote from Jupiter API
-   * @param {number} currentAmount - Input token amount
-   * @param {Object} fromAsset - Input token information
-   * @param {Object} toAsset - Output token information
    */
-  async function getQuote(currentAmount, fromAsset, toAsset) {
+  async function getQuote(currentAmount: number, fromAsset: any, toAsset: any): Promise<void> {
     if (!currentAmount || !fromAsset || !toAsset || currentAmount <= 0) {
       setToAmount("");
       setQuoteResponse(null);
@@ -88,7 +93,7 @@ export function useSwap({ connection, walletProvider }) {
 
     try {
       // Calculate input amount with proper decimals
-      const inputAmount = currentAmount * Math.pow(10, fromAsset.decimals);
+      const inputAmount = currentAmount * Math.pow(10, fromAsset.decimals || 9);
       
       // Fetch quote from Jupiter API
       const response = await fetch(
@@ -103,7 +108,7 @@ export function useSwap({ connection, walletProvider }) {
 
       if (quote && quote.outAmount) {
         // Convert outAmount to human-readable format
-        const outAmountNumber = Number(quote.outAmount) / Math.pow(10, toAsset.decimals);
+        const outAmountNumber = Number(quote.outAmount) / Math.pow(10, toAsset.decimals || 9);
         setToAmount(outAmountNumber.toString());
         setQuoteResponse(quote);
         
@@ -113,7 +118,7 @@ export function useSwap({ connection, walletProvider }) {
       } else {
         throw new Error("Invalid quote response");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching quote:", error);
       toast.error("Failed to get swap quote");
       setToAmount("");
@@ -123,7 +128,7 @@ export function useSwap({ connection, walletProvider }) {
 
   // Debounce the quote call to prevent excessive API requests
   const debounceQuoteCall = useCallback(
-    debounce((currentAmount, fromAsset, toAsset) => {
+    debounce((currentAmount: number, fromAsset: any, toAsset: any) => {
       getQuote(currentAmount, fromAsset, toAsset);
     }, 500),
     []
@@ -133,14 +138,14 @@ export function useSwap({ connection, walletProvider }) {
    * Executes the swap transaction with fee sponsorship
    * @returns {string|null} - Transaction signature if successful, null otherwise
    */
-  async function signAndSendTransaction() {
+  async function signAndSendTransaction(): Promise<string | null> {
     // Validate required dependencies
     if (!walletProvider || !connection || !quoteResponse) {
       toast.error("Missing required dependencies for swap");
       return null;
     }
   
-    if (!walletProvider.publicKey) {
+    if (!walletProvider.address) {
       toast.error("Wallet not connected");
       return null;
     }
@@ -162,7 +167,7 @@ export function useSwap({ connection, walletProvider }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           quoteResponse,
-          userPublicKey: walletProvider.publicKey.toString(),
+          userPublicKey: walletProvider.address,
           wrapAndUnwrapSol: true,
           feeAccount: SPONSOR_PUBLIC_KEY,
           // Set priority for the transaction
@@ -215,71 +220,52 @@ export function useSwap({ connection, walletProvider }) {
       // 4. Have the user sign the transaction
       toast.loading("Please sign the transaction...", { id: toastId });
       
-      // The transaction already has the sponsor's signature at index 0
-      // We need to sign at index 1 (which is why the backend prepares space for this)
-      const signedTransaction = await walletProvider.signTransaction(transaction);
-      
-      // Verify both signatures are present
-      if (!signedTransaction.signatures[0] || !signedTransaction.signatures[1]) {
-        throw new Error("Transaction missing required signatures");
-      }
-  
-      // 5. Send the fully signed transaction
-      toast.loading("Sending transaction to Solana...", { id: toastId });
-      const rawTransaction = signedTransaction.serialize();
-      const txid = await connection.sendRawTransaction(rawTransaction, {
-        skipPreflight: true, // Skip preflight to avoid false negatives
-        maxRetries: 3,
-      });
-  
-      // 6. Confirm the transaction
-      toast.loading("Confirming transaction...", { id: toastId });
-      
       try {
-        const latestBlockHash = await connection.getLatestBlockhash();
-        await connection.confirmTransaction(
-          {
-            blockhash: latestBlockHash.blockhash,
-            lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-            signature: txid,
-          },
-          "confirmed" // "finalized" can take much longer
-        );
-        
-        // Check if we need to wait for finalization
-        const confirmation = await connection.getSignatureStatus(txid);
-        if (confirmation.value?.confirmationStatus !== "finalized") {
-          toast.loading("Waiting for finalization...", { id: toastId });
-          await connection.confirmTransaction(txid, "finalized");
+        // For Privy's wallet provider we need to use their signAndSendTransaction API
+        if (walletProvider.signAndSendTransaction) {
+          // Use Privy's method
+          const result = await walletProvider.signAndSendTransaction(transaction);
+          const txid = result?.signature || transaction.signatures[0].toString();
+          
+          toast.success(`Swap transaction sent!`, { id: toastId });
+          setSwapping(false);
+          return txid;
+        } else if (walletProvider.signTransaction) {
+          // Fallback to traditional flow
+          const signedTransaction = await walletProvider.signTransaction(transaction);
+          const rawTransaction = signedTransaction.serialize();
+          const txid = await connection.sendRawTransaction(rawTransaction, {
+            skipPreflight: true,
+            maxRetries: 3,
+          });
+          
+          toast.success(`Swap transaction sent!`, { id: toastId });
+          setSwapping(false);
+          return txid;
+        } else {
+          throw new Error("Wallet doesn't support transaction signing");
         }
-      } catch (confirmError) {
-        console.warn("Error during confirmation, transaction might still succeed:", confirmError);
-        // We don't throw here, as the transaction might still be valid
+      } catch (error: any) {
+        console.error("Error signing transaction:", error);
+        toast.error(`Failed to sign transaction: ${error?.message || "Unknown error"}`, { id: toastId });
+        setSwapping(false);
+        return null;
       }
-  
-      toast.success(`Swap successful!`, { id: toastId, duration: 5000 });
-      setSwapping(false);
-      
-      // Reset quote after successful swap
-      setQuoteResponse(null);
-      setToAmount("");
-      
-      return txid;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Swap error:", error);
-      toast.error(`Swap failed: ${error.message || "Unknown error"}`, { id: toastId });
+      toast.error(`Swap failed: ${error?.message || "Unknown error"}`, { id: toastId });
       setSwapping(false);
       return null;
     }
   }
 
-  return { 
-    quoteResponse, 
-    estimatedFee, 
-    swapping, 
+  return {
+    quoteResponse,
+    estimatedFee,
+    swapping,
     toAmount,
     getQuote,
     debounceQuoteCall,
-    signAndSendTransaction 
+    signAndSendTransaction,
   };
 }

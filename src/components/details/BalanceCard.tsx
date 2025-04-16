@@ -9,14 +9,15 @@ const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 import { useState } from "react";
 import Link from "next/link";
 import CurrencyChange from "./CurrencyChange";
-import { useAppKitAccount } from "@reown/appkit/react";
+import { usePrivy } from "@privy-io/react-auth";
 import toast from "react-hot-toast";
 import useFungibleTokens from "@/hooks/useFungibleTokes";
 
 const BalanceCard = () => {
   const [isCurr, setIsCurr] = useState(true);
-  const { address } = useAppKitAccount();
-  const { totalPrice, loading } = useFungibleTokens(address || "");
+  const { user } = usePrivy();
+  const walletAddress = user?.wallet?.address || "";
+  const { totalPrice, loading } = useFungibleTokens(walletAddress || "");
   
   const changeCurr = () => {
     setIsCurr(!isCurr);
@@ -24,7 +25,7 @@ const BalanceCard = () => {
 
   const copyToClipBoard = async () => {
     try {
-      await navigator.clipboard.writeText(`${address}`);
+      await navigator.clipboard.writeText(`${walletAddress}`);
 
       setTimeout(() => {
         toast.success("Address copied successfully!");
@@ -32,7 +33,7 @@ const BalanceCard = () => {
 
       return true;
     } catch (err) {
-      toast.error("Failed to copy balance to clipboard:", err);
+      toast.error("Failed to copy balance to clipboard");
       console.error("Failed to copy balance to clipboard:", err);
       return false;
     }
@@ -68,20 +69,22 @@ const BalanceCard = () => {
           <h1
             className={`font-normal text-[14px] leading-1 tracking-[0%] opacity-50`}
           >
-            {String(address).substring(0, 8)}...
-            {String(address).substring(
-              String(address).length - 9,
-              String(address).length - 1
-            )}
+            {walletAddress ? `${String(walletAddress).substring(0, 8)}...
+            ${String(walletAddress).substring(
+              String(walletAddress).length - 9,
+              String(walletAddress).length - 1
+            )}` : "Not connected"}
           </h1>
-          <Image
-            src="/Copy.svg"
-            className="cursor-pointer"
-            alt="prev"
-            width={20}
-            height={20}
-            onClick={copyToClipBoard}
-          />
+          {walletAddress && (
+            <Image
+              src="/Copy.svg"
+              className="cursor-pointer"
+              alt="prev"
+              width={20}
+              height={20}
+              onClick={copyToClipBoard}
+            />
+          )}
         </div>
       </div>
 
