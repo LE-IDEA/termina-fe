@@ -4,17 +4,14 @@ import { Geologica, Instrument_Serif } from "next/font/google";
 import SwapSlippage from "@/components/details/SwapSlippage";
 import { useState, useEffect } from "react";
 
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection } from "@solana/web3.js";
 import { usePrivy } from "@privy-io/react-auth";
 
 import useTokens from "@/hooks/useTokens";
 import TokenSearchModal from "@/components/app-components/TokenModal";
 import toast from "react-hot-toast";
-import { useSolBalance } from "@/hooks/useSolBalance";
 import { useSwap } from "@/hooks/useSwap";
-import { Input } from "@/components/ui/input";
 import SearchAdd from "@/components/details/SearchAdd";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ConnectButton from "@/components/ConnectComponent";
 
@@ -30,16 +27,11 @@ interface Token {
   logoURI?: string;
 }
 
-interface SwapPageProps {
-  initialFromAsset?: Token;
-  initialToAsset?: Token;
-}
 
 const SwapPage = () => {
   const [connection, setConnection] = useState<Connection | null>(null);
   const { user, authenticated, ready } = usePrivy();
   const walletProvider = user?.wallet;
-  const router = useRouter();
   const { tokens } = useTokens();
   
   // Check if wallet is Solana
@@ -270,7 +262,7 @@ const SwapPage = () => {
     return popularTokenAddresses[symbol];
   };
 
-  // Function to handle popular token selection
+
   const handlePopularTokenSelect = async (symbol: string) => {
     const address = getAddressBySymbol(symbol);
     if (!address) return;
