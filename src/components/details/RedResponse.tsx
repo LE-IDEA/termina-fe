@@ -6,10 +6,14 @@ const geologica = Geologica({
   subsets: ["latin"],
 });
 
-const RedResponse = ({ errorMessage }) => {
+interface RedResponseProps {
+  errorMessage?: string;
+}
+
+const RedResponse = ({ errorMessage }: RedResponseProps) => {
   return (
     <div className="flex flex-row p-[10px] rounded-br-[12px] rounded-bl-[12px] bg-[#ffcbcb]">
-      <div className="flex flex-row gap-[4px]  h-[12px]">
+      <div className="flex flex-row gap-[4px] h-[12px]">
         <Image src="/circleDetail.svg" alt="Home" width={12} height={12} />
         <h1
           className={`${geologica.className} text-[#AC1717] my-auto font-medium text-[8px] leading-[8px] tracking-normal`}

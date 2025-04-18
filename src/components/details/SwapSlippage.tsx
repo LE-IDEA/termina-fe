@@ -8,9 +8,9 @@ const geologica = Geologica({
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
 
 const SwapSlippage = () => {
-  const [activeButton, setActiveButton] = useState(null);
+  const [activeButton, setActiveButton] = useState<number | null>(null);
 
-  const handleClick = (index) => {
+  const handleClick = (index: number) => {
     setActiveButton(index);
   };
 

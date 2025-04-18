@@ -24,7 +24,7 @@ interface Token {
   mint?: string;
   symbol: string;
   name: string;
-  icon?: string;
+  logoURI?: string;
   decimals?: number;
 }
 
@@ -61,24 +61,19 @@ const TokenModal: React.FC<TokenSearchModalProps> = ({
     search: "",
   });
 
-  // Filtered tokens based on search input
   const filteredTokens = useMemo(() => {
-    // If no search, return all tokens
     if (!search.trim()) return tokens;
 
-    // Filter tokens based on name or symbol (case-insensitive)
     return tokens.filter(token => 
       token.name.toLowerCase().includes(search.toLowerCase()) ||
       token.symbol.toLowerCase().includes(search.toLowerCase())
     );
   }, [tokens, search]);
 
-  // Update selected token when defaultToken changes
   useEffect(() => {
     setSelectedToken(defaultToken);
   }, [defaultToken]);
 
-  // Handle token selection
   const handleSelect = (token: Token) => {
     setSelectedToken(token);
     onSelect(token);
@@ -96,10 +91,10 @@ const TokenModal: React.FC<TokenSearchModalProps> = ({
     <Dialog open={open} onOpenChange={setOpen}>
       {/* Trigger Button/Display */}
       <DialogTrigger asChild>
-        <span className="flex gap-6 items-center mb-4 cursor-pointer" border-0>
-          {selectedToken?.icon && (
+        <span className="flex gap-6 items-center mb-4 cursor-pointer">
+          {selectedToken?.logoURI && (
             <img
-              src={selectedToken?.icon}
+              src={selectedToken?.logoURI}
               alt={`${selectedToken?.symbol} logo`}
               className="w-12 h-12 rounded-xl"
               onError={(e) => (e.currentTarget.style.display = "none")}

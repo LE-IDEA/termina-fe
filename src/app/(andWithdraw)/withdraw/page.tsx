@@ -4,8 +4,7 @@ import { Geologica } from "next/font/google";
 import { useEffect, useState } from "react";
 import BlackResponse from "@/components/details/BlackResponse";
 import RedResponse from "@/components/details/RedResponse";
-import { useAppKitProvider } from "@reown/appkit/react";
-import { type Provider } from "@reown/appkit-adapter-solana/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { toast } from "react-hot-toast";
 
 const geologica = Geologica({
@@ -14,9 +13,16 @@ const geologica = Geologica({
 });
 
 const ScalexConverterPage = () => {
-  const { walletProvider } = useAppKitProvider<Provider>("solana");
-  const userAddress = walletProvider?.publicKey?.toString();
+  const { user, authenticated } = usePrivy();
+  const userAddress = user?.wallet?.address;
   const [address, setAddress] = useState(userAddress);
+
+  // Update address when user logs in
+  useEffect(() => {
+    if (authenticated && user?.wallet?.address) {
+      setAddress(user.wallet.address);
+    }
+  }, [authenticated, user?.wallet?.address]);
 
   const [isInputActive, setIsInputActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -54,20 +60,20 @@ const ScalexConverterPage = () => {
   }, []);
 
   // Input handlers
-  const handleNairaChange = (e) => {
+  const handleNairaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nairaValue = e.target.value;
     setNaira(nairaValue);
     // Use dynamic exchange rate instead of hardcoded value
     if (exchangeRate) {
-      setDollar((nairaValue / exchangeRate).toFixed(2));
+      setDollar((Number(nairaValue) / exchangeRate).toFixed(2));
     }
   };
 
-  const handleDollarChange = (e) => {
+  const handleDollarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const dollarValue = e.target.value;
     setDollar(dollarValue);
     if (exchangeRate) {
-      setNaira((dollarValue * exchangeRate).toFixed(2));
+      setNaira((Number(dollarValue) * exchangeRate).toFixed(2));
     }
   };
 

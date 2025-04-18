@@ -4,14 +4,14 @@ import { useState } from "react";
 const geologica = Geologica({ weight: ["300", "400", "500", "600"], subsets: ["latin"] });
 
 const SlippageSettings = () => {
-    const [profitButton, setProfitButton] = useState(null);
-    const [activeButton, setActiveButton] = useState(null);
+    const [profitButton, setProfitButton] = useState<number | null>(null);
+    const [activeButton, setActiveButton] = useState<number | null>(null);
 
-    const profitClick = (index) => {
+    const profitClick = (index: number) => {
         setProfitButton(index);
     };
 
-    const handleClick = (index) => {
+    const handleClick = (index: number) => {
         setActiveButton(index);
     };
     return (

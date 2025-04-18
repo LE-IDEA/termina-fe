@@ -26,7 +26,7 @@ export default function Sidebar() {
   ];
 
   // Map icons to names for fallback when imgURL is empty
-  const iconMap = (name, isActive) => {
+  const iconMap = (name: string, isActive: boolean) => {
     const iconColor = isActive ? "text-blue-500" : "text-gray-800";
 
     switch (name) {
@@ -48,7 +48,7 @@ export default function Sidebar() {
   };
 
   // Check if the link is active
-  const isLinkActive = (route) => {
+  const isLinkActive = (route: string) => {
     return pathname === route;
   };
 
