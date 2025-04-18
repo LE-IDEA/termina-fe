@@ -1,4 +1,3 @@
-// utils/formatters.ts
 type Token = {
   address?: string;
   symbol: string;
@@ -34,7 +33,6 @@ type Token = {
     })} ${token.symbol}`;
   }
   
-  // Optional hook for components that need balance formatting
   export function useFormattedBalance(options: Omit<FormatBalanceOptions, 'isWalletConnected'> & {
     walletProvider?: { publicKey: { toString: () => string } | null };
   }) {
