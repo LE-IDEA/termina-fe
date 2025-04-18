@@ -5,14 +5,12 @@ import VolMarkers from "@/components/details/VolMarkers";
 import Image from "next/image";
 import { Geologica } from "next/font/google";
 import FirstCrypto from "@/components/details/FirstCrypto";
-import TopHolds from "@/components/details/TopHolds";
-import SlippageSettings from "@/components/details/SlippageSettings";
 import { useState } from "react";
 import useTokenData from "@/hooks/useTokenData";
 import { useParams } from "next/navigation";
 import FixedChartWithMarketCap from "@/components/charts/FixedChartWithMarketCap";
 import Link from "next/link";
-import { formatNumber } from "@/utils/formatNumber";
+import { formatNumber } from "@/utils";
 import { Pool } from "@/types/jupTokens";
 
 const geologica = Geologica({
