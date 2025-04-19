@@ -6,23 +6,23 @@ const HowItWorks = () => {
   const steps = [
     {
       number: "01",
-      title: "Connect Your Wallet",
-      description: "Connect your crypto wallet with a single click. We support most popular wallets."
+      title: "Getting started with a Wallet",
+      description: "When you sign up with Termina, you automatically receive a wallet as part of your account, no extra steps needed. It's a non-custodial wallet, meaning you have full control over your assets at all times."
     },
     {
       number: "02",
       title: "Choose Tokens to Swap",
-      description: "Select the tokens you want to swap from our extensive list of supported cryptocurrencies."
+      description: " Select your tokens, catch the alpha, and swap effortlessly with Termina’s fast, clean UI. Memecoin swaps feel like a breeze, with transactions processed instantly thanks to our gas abstraction technology."
     },
     {
       number: "03",
       title: "Review and Confirm",
-      description: "Check the exchange rate and preview of your transaction. Confirm when you're ready."
+      description: "Check the exchange rate and preview of your transaction. Confirm when you're ready and track your PnL."
     },
     {
       number: "04",
-      title: "Enjoy Seamless Swapping",
-      description: "Your transaction is processed instantly with our gas abstraction technology."
+      title: "Convert Your Earnings to fiat",
+      description: "Convert your earnings to fiat quickly and easily on termina's fast, secure solution for seamless crypto-to-fiat transactions."
     }
   ];
 

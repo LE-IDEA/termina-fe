@@ -1,4 +1,4 @@
-
+'use client';
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -18,9 +18,14 @@ const CTASection = () => {
             <p className="text-lg md:text-xl text-gray-700 max-w-2xl mb-8">
               Be part of the users who are already enjoying simple, gas-free token swaps with Termina.
             </p>
-            <Button size="lg" className="bg-black text-white hover:bg-gray-800 py-6 px-8">
+            <Button
+              size="lg"
+              className="bg-black text-white hover:bg-gray-800 py-6 px-8"
+              onClick={() => window.location.href = 'https://app.termina.fun'}
+            >
               Get Started Now <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
+
           </div>
         </div>
       </div>

@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center mb-12">
           <div className="flex items-center space-x-2 mb-6 md:mb-0">
             <img 
-              src="public\Termina-logo.png" 
+              src="/images/Termina-logo.png" 
               alt="Termina Logo" 
               className="w-16 h-16 object-contain"
             />
@@ -67,7 +67,7 @@ const Footer = () => {
             © {new Date().getFullYear()} Termina. All rights reserved.
           </p>
           <p className="text-gray-500 text-sm mt-2 md:mt-0">
-            Built with ❤️ for the DeFi community
+            Built with ❤️ for the DEGEN community
           </p>
         </div>
       </div>

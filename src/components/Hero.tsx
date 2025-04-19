@@ -14,7 +14,7 @@ const Hero = () => {
           {/* Logo */}
           <div className="w-32 h-32 md:w-40 md:h-40 relative mb-8 animate-float">
             <img 
-              src="/85df3af3-77a7-4b41-a270-485dc7e2c07f.png" 
+              src="/images/85df3af3-77a7-4b41-a270-485dc7e2c07f.png" 
               alt="Termina Logo" 
               className="w-full h-full object-contain"
             />

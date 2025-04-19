@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Twitter, MessageCircle, Menu, X } from "lucide-react";
@@ -15,11 +17,11 @@ const Navbar = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <img
-              src="/Termina-logo.png"
-              alt="Termina Logo"
-              className="h-7 w-auto object-contain"
-            />
+          <img
+            src="/images/Termina-logo.png" 
+            alt="Termina Logo"
+            className="h-7 w-auto object-contain"
+          />
           </div>
 
           
