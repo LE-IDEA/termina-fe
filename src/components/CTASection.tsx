@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from 'lucide-react'
 
 const CTASection = () => {
   return (
