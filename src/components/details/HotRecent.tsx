@@ -1,4 +1,3 @@
-// src/components/details/HotRecent.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,15 +15,15 @@ const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
 });
 
-interface ForestPool {
+interface Pool {
   id: string;
   baseAsset: {
     id: string;
     name: string;
     symbol: string;
-    icon?: string;
-    usdPrice: number;
     mcap: number;
+    usdPrice: number;
+    icon?: string;
     stats24h?: {
       priceChange: number;
     };
@@ -32,146 +31,152 @@ interface ForestPool {
 }
 
 export default function HotRecent() {
-  const [trendingTokens, setTrendingTokens] = useState<ForestPool[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [trendingTokens, setTrendingTokens] = useState<Pool[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // For dynamic price / holding simulation
-  const [dynamicHoldings, setDynamicHoldings] = useState<Record<string, number>>({});
+  // Dynamic states for simulated price and pnl changes
+  const [dynamicPrices, setDynamicPrices] = useState<Record<string, number>>({});
   const [dynamicChanges, setDynamicChanges] = useState<Record<string, number>>({});
 
   useEffect(() => {
     async function fetchTokens() {
       try {
-        const res = await fetch("https://datapi.jup.ag/v1/pools/toptrending/5m");
-        const data = await res.json();
-        // Take top 20
-        const fetched: ForestPool[] = data.pools.slice(0, 20);
-        setTrendingTokens(fetched);
+        const response = await fetch("https://datapi.jup.ag/v1/pools/toptrending/5m");
+        const data = await response.json();
 
-        // Initialize placeholder values
-        const initialHold: Record<string, number> = {};
-        const initialChg: Record<string, number> = {};
-        fetched.forEach((tk) => {
-          initialHold[tk.id] = 0; // replace with actual user balance later
-          initialChg[tk.id] = tk.baseAsset.stats24h?.priceChange || 0;
+        // Take the first 20 items
+        const fetchedTokens: Pool[] = data.pools.slice(0, 20);
+        setTrendingTokens(fetchedTokens);
+
+        // Initialize dynamic price & change maps
+        const initialPrices: Record<string, number> = {};
+        const initialChanges: Record<string, number> = {};
+
+        fetchedTokens.forEach((token) => {
+          initialPrices[token.id] = token.baseAsset.usdPrice;
+          initialChanges[token.id] = token.baseAsset.stats24h?.priceChange ?? 0;
         });
-        setDynamicHoldings(initialHold);
-        setDynamicChanges(initialChg);
+
+        setDynamicPrices(initialPrices);
+        setDynamicChanges(initialChanges);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch trending tokens:", err);
         setError("Failed to fetch trending tokens.");
       } finally {
         setIsLoading(false);
       }
     }
+
     fetchTokens();
   }, []);
 
-  // Simulate “holding” changes – replace with real hook in production
+  // Simulate small random price/PnL fluctuations every few seconds
   useEffect(() => {
     if (isLoading || trendingTokens.length === 0) return;
-    const iv = setInterval(() => {
-      setDynamicHoldings((prev) => {
-        const next = { ...prev };
-        trendingTokens.forEach((tk) => {
-          const delta = (Math.random() - 0.5) * 0.1;
-          next[tk.id] = Math.max(0, (next[tk.id] || 0) + delta);
+
+    const interval = setInterval(() => {
+      setDynamicPrices((prev) => {
+        const newPrices = { ...prev };
+        trendingTokens.forEach((token) => {
+          // Random ±0.2% change
+          const baseChange = (Math.random() - 0.5) * 0.004;
+          newPrices[token.id] = newPrices[token.id] * (1 + baseChange);
         });
-        return next;
+        return newPrices;
       });
+
       setDynamicChanges((prev) => {
-        const next = { ...prev };
-        trendingTokens.forEach((tk) => {
-          const delta = (Math.random() - 0.5) * 0.2;
-          next[tk.id] = Math.max(-50, Math.min(50, (next[tk.id] || 0) + delta));
+        const newChanges = { ...prev };
+        trendingTokens.forEach((token) => {
+          // Random ±0.15% change to the displayed PnL%
+          const pnlChange = (Math.random() - 0.5) * 0.15;
+          const updated = (prev[token.id] ?? token.baseAsset.stats24h?.priceChange ?? 0) + pnlChange;
+          newChanges[token.id] = Math.max(-20, Math.min(20, updated));
         });
-        return next;
+        return newChanges;
       });
     }, 3000);
-    return () => clearInterval(iv);
+
+    return () => clearInterval(interval);
   }, [isLoading, trendingTokens]);
 
   return (
-    <div className="space-y-6 px-4">
+    <div className="flex flex-col gap-4">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between px-2">
         <div className="flex items-center gap-1">
-          <h2 className={`text-lg font-semibold ${instrumentSerif.className}`}>
-            Recent
-          </h2>
+          <h2 className={`${instrumentSerif.className} text-lg font-semibold`}>Recent</h2>
           <Image src="/Clock.svg" alt="Recent" width={16} height={16} />
         </div>
         <Link href="/activity/spot">
-          <h3
-            className={`${geologica.className} text-xs text-gray-500 hover:opacity-70 cursor-pointer`}
-          >
+          <span className={`${geologica.className} text-xs text-gray-500 hover:opacity-75 cursor-pointer`}>
             See more
-          </h3>
+          </span>
         </Link>
       </div>
 
+      {/* Loading Indicator */}
       {isLoading && (
         <div className="flex justify-center items-center h-32">
-          <div className="w-6 h-6 border-t-2 border-b-2 border-black rounded-full animate-spin" />
+          <div className="w-8 h-8 border-t-2 border-b-2 border-gray-600 rounded-full animate-spin" />
         </div>
       )}
 
+      {/* Error Message */}
       {error && (
-        <div className="flex justify-center items-center h-32">
-          <p className="text-red-500">{error}</p>
+        <div className="p-4 bg-red-100 text-red-700 rounded-lg text-center">
+          {error}
         </div>
       )}
 
+      {/* Token Cards */}
       {!isLoading && !error && (
-        // ← Add `space-y-4` here to guarantee vertical spacing between cards
-        <div className="space-y-4">
-          {trendingTokens.map((tk) => {
-            const holdingAmount = dynamicHoldings[tk.id] || 0;
-            const pctChange = 
-              dynamicChanges[tk.id] ?? tk.baseAsset.stats24h?.priceChange ?? 0;
-            const mcap = tk.baseAsset.mcap || 0;
+        <div className="grid grid-cols-1 gap-4">
+          {trendingTokens.map((token) => {
+            const base = token.baseAsset;
+            const price = dynamicPrices[token.id]?.toFixed(4) ?? base.usdPrice.toFixed(4);
+            const change = (dynamicChanges[token.id] ?? base.stats24h?.priceChange ?? 0).toFixed(2);
+            const changePositive = Number(change) >= 0;
 
             return (
-              <Link key={tk.id} href={`/${tk.baseAsset.id}`}>
-                <div className="bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-shadow w-full">
-                  {/* 1) Full‐width icon */}
-                  <div className="w-full h-32 bg-zinc-900 flex items-center justify-center overflow-hidden">
-                    {tk.baseAsset.icon ? (
+              <Link key={token.id} href={`/${base.id}`} className="block">
+                <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+                  {/* Icon spans full width */}
+                  <div className="bg-gray-900 h-36 w-full flex items-center justify-center">
+                    {base.icon ? (
                       <img
-                        src={tk.baseAsset.icon}
-                        alt={tk.baseAsset.name}
-                        className="w-full h-full object-contain p-2"
+                        src={base.icon}
+                        alt={base.symbol}
+                        className="h-full w-full object-contain"
                       />
                     ) : (
-                      <div className="text-white">No Icon</div>
+                      <div className="text-white text-xl">No Image</div>
                     )}
                   </div>
 
-                  {/* 2) Two rows under image */}
-                  <div className="p-4 space-y-2">
-                    {/* Row 1: Token Name (left) / User holding (right) */}
-                    <div className="flex justify-between items-center">
-                      <h3 className={`text-base font-medium ${geologica.className}`}>
-                        {tk.baseAsset.name}
-                      </h3>
-                      <p className={`text-base font-semibold ${geologica.className}`}>
-                        ${holdingAmount.toFixed(4)}
-                      </p>
+                  {/* Below: Name + MCap on left; Price + PnL on right */}
+                  <div className="flex justify-between items-start p-4">
+                    <div className="flex flex-col">
+                      <span className={`${geologica.className} text-base font-medium truncate`}>
+                        {base.name}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        MCAP&nbsp;${formatNumber(base.mcap)}
+                      </span>
                     </div>
-
-                    {/* Row 2: Market Cap (left) / 24h % change (right) */}
-                    <div className="flex justify-between items-center">
-                      <p className={`text-sm text-gray-500 ${geologica.className}`}>
-                        MCAP ${formatNumber(mcap)}
-                      </p>
-                      <p
-                        className={`text-sm font-medium ${
-                          pctChange >= 0 ? "text-green-600" : "text-red-600"
-                        } ${geologica.className}`}
+                    <div className="flex flex-col items-end">
+                      <span className={`${geologica.className} text-base font-medium`}>
+                        ${price}
+                      </span>
+                      <span
+                        className={`text-sm font-semibold ${
+                          changePositive ? "text-green-500" : "text-red-600"
+                        }`}
                       >
-                        {pctChange.toFixed(2)}%
-                      </p>
+                        {changePositive ? "+" : ""}
+                        {change}%
+                      </span>
                     </div>
                   </div>
                 </div>
