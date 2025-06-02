@@ -1,201 +1,185 @@
+// src/components/details/HotRecent.tsx
 "use client";
+
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Geologica, Instrument_Serif } from "next/font/google";
 import { formatNumber } from "@/utils";
-import Link from "next/link";
 
 const geologica = Geologica({
   weight: ["300", "400", "500", "600"],
   subsets: ["latin"],
 });
-const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+});
 
-const HotRecent = () => {
-  const [trendingTokens, setTrendingTokens] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface ForestPool {
+  id: string;
+  baseAsset: {
+    id: string;
+    name: string;
+    symbol: string;
+    icon?: string;
+    usdPrice: number;
+    mcap: number;
+    stats24h?: {
+      priceChange: number;
+    };
+  };
+}
+
+export default function HotRecent() {
+  const [trendingTokens, setTrendingTokens] = useState<ForestPool[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Dynamic states for price simulation
-  const [dynamicPrices, setDynamicPrices] = useState<Record<string, number>>({});
+
+  // For dynamic price / holding simulation
+  const [dynamicHoldings, setDynamicHoldings] = useState<Record<string, number>>({});
   const [dynamicChanges, setDynamicChanges] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    const fetchTokens = async () => {
+    async function fetchTokens() {
       try {
-        const response = await fetch(
-          "https://datapi.jup.ag/v1/pools/toptrending/5m"
-        );
-        const data = await response.json();
-        const fetchedTokens = data.pools.slice(0, 5);
-        setTrendingTokens(fetchedTokens);
-        
-        // Initialize dynamic prices and changes
-        const initialPrices: Record<string, number> = {};
-        const initialChanges: Record<string, number> = {};
-        
-        fetchedTokens.forEach((token: any) => {
-          initialPrices[token.id] = token.baseAsset.usdPrice;
-          initialChanges[token.id] = token.baseAsset.stats24h?.priceChange || 0;
+        const res = await fetch("https://datapi.jup.ag/v1/pools/toptrending/5m");
+        const data = await res.json();
+        // Take top 20
+        const fetched: ForestPool[] = data.pools.slice(0, 20);
+        setTrendingTokens(fetched);
+
+        // Initialize placeholder values
+        const initialHold: Record<string, number> = {};
+        const initialChg: Record<string, number> = {};
+        fetched.forEach((tk) => {
+          initialHold[tk.id] = 0; // replace with actual user balance later
+          initialChg[tk.id] = tk.baseAsset.stats24h?.priceChange || 0;
         });
-        
-        setDynamicPrices(initialPrices);
-        setDynamicChanges(initialChanges);
+        setDynamicHoldings(initialHold);
+        setDynamicChanges(initialChg);
       } catch (err) {
+        console.error(err);
         setError("Failed to fetch trending tokens.");
       } finally {
         setIsLoading(false);
       }
-    };
-
+    }
     fetchTokens();
   }, []);
-  
-  // Simulate price fluctuations
+
+  // Simulate “holding” changes – replace with real hook in production
   useEffect(() => {
     if (isLoading || trendingTokens.length === 0) return;
-    
-    const interval = setInterval(() => {
-      setDynamicPrices(prev => {
-        const newPrices = { ...prev };
-        
-        trendingTokens.forEach(token => {
-          // Random percentage change between -0.2% and +0.2%
-          const isPositive = token.baseAsset.stats24h?.priceChange >= 0;
-          const randomChange = (Math.random() - (isPositive ? 0.4 : 0.6)) * 0.004;
-          
-          if (newPrices[token.id]) {
-            // Calculate new price
-            newPrices[token.id] = newPrices[token.id] * (1 + randomChange);
-          }
+    const iv = setInterval(() => {
+      setDynamicHoldings((prev) => {
+        const next = { ...prev };
+        trendingTokens.forEach((tk) => {
+          const delta = (Math.random() - 0.5) * 0.1;
+          next[tk.id] = Math.max(0, (next[tk.id] || 0) + delta);
         });
-        
-        return newPrices;
+        return next;
       });
-      
-      setDynamicChanges(prev => {
-        const newChanges = { ...prev };
-        
-        trendingTokens.forEach(token => {
-          // Random change to percentage
-          const isPositive = token.baseAsset.stats24h?.priceChange >= 0;
-          const randomChange = (Math.random() - (isPositive ? 0.4 : 0.6)) * 0.15;
-          
-          if (newChanges[token.id] !== undefined) {
-            // Update change percentage
-            newChanges[token.id] = Math.max(-20, Math.min(20, newChanges[token.id] + randomChange));
-          }
+      setDynamicChanges((prev) => {
+        const next = { ...prev };
+        trendingTokens.forEach((tk) => {
+          const delta = (Math.random() - 0.5) * 0.2;
+          next[tk.id] = Math.max(-50, Math.min(50, (next[tk.id] || 0) + delta));
         });
-        
-        return newChanges;
+        return next;
       });
-    }, 3500);
-    
-    return () => clearInterval(interval);
+    }, 3000);
+    return () => clearInterval(iv);
   }, [isLoading, trendingTokens]);
 
   return (
-    <div className="flex flex-col gap-[6px]">
+    <div className="space-y-6 px-4">
       {/* Header */}
-      <div className="flex flex-row justify-between pr-[6px] pl-[6px]">
-        <div className="flex flex-row items-center gap-1">
-          <h1
-            className={`${instrumentSerif.className} text-[16px] font-semibold`}
-          >
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-1">
+          <h2 className={`text-lg font-semibold ${instrumentSerif.className}`}>
             Recent
-          </h1>
-          <Image src="/Clock.svg" alt="Recent" width={12} height={12} />
+          </h2>
+          <Image src="/Clock.svg" alt="Recent" width={16} height={16} />
         </div>
         <Link href="/activity/spot">
-          <h1
-            className={`${geologica.className} font-normal text-[10px] opacity-50 my-auto hover:opacity-70 cursor-pointer`}
+          <h3
+            className={`${geologica.className} text-xs text-gray-500 hover:opacity-70 cursor-pointer`}
           >
             See more
-          </h1>
+          </h3>
         </Link>
       </div>
 
-      {/* Loading & Error Handling */}
       {isLoading && (
-        <div className="p-[12px] rounded-[18px] bg-[#ebebeb] flex items-center justify-center h-[120px]">
-          <div className="w-6 h-6 border-t-2 border-b-2 border-black rounded-full animate-spin"></div>
+        <div className="flex justify-center items-center h-32">
+          <div className="w-6 h-6 border-t-2 border-b-2 border-black rounded-full animate-spin" />
         </div>
       )}
+
       {error && (
-        <div className="p-[12px] rounded-[18px] bg-[#ebebeb] flex items-center justify-center">
+        <div className="flex justify-center items-center h-32">
           <p className="text-red-500">{error}</p>
         </div>
       )}
 
-      {/* Trending Tokens */}
-      {!isLoading &&
-        !error &&
-        trendingTokens.map((token) => (
-          <Link href={`/${token.baseAsset.id}`} key={token.id}>
-            <div className="p-[12px] rounded-[18px] bg-[#ebebeb] flex flex-row justify-between hover:shadow-md transition-all duration-300">
-              <div className="flex flex-row gap-[10px]">
-                <img
-                  src={token.baseAsset?.icon || "/default-token.svg"}
-                  alt={token.baseAsset?.name}
-                  width={32}
-                  height={32}
-                  className="w-[32px] h-[32px]"
-                />
-                <div className="flex flex-col max-w-[162px]">
-                  <h1
-                    className={`${geologica.className} font-medium text-[16px] truncate`}
-                  >
-                    {token.baseAsset?.name || "Unknown Token"}
-                  </h1>
-                  <h1
-                    className={`${geologica.className} font-normal text-[10px] opacity-50`}
-                  >
-                    {token.baseAsset?.id
-                      ? token.baseAsset.id.slice(0, 6) + "..."
-                      : "Unknown ID"}
-                  </h1>
-                </div>
-              </div>
+      {!isLoading && !error && (
+        // ← Add `space-y-4` here to guarantee vertical spacing between cards
+        <div className="space-y-4">
+          {trendingTokens.map((tk) => {
+            const holdingAmount = dynamicHoldings[tk.id] || 0;
+            const pctChange = 
+              dynamicChanges[tk.id] ?? tk.baseAsset.stats24h?.priceChange ?? 0;
+            const mcap = tk.baseAsset.mcap || 0;
 
-              {/* Right Section: Market Cap, Price & Change */}
-              <div className="flex flex-col justify-between text-right">
-                <div className="flex flex-row gap-[6px] items-center justify-end">
-                  <Image
-                    src="/MCAP.svg"
-                    alt="Market Cap"
-                    width={32}
-                    height={16}
-                  />
-                  <h1
-                    className={`${geologica.className} font-medium text-[16px] transition-all duration-500`}
-                  >
-                    ${formatNumber(token.baseAsset?.mcap)}
-                  </h1>
+            return (
+              <Link key={tk.id} href={`/${tk.baseAsset.id}`}>
+                <div className="bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-shadow w-full">
+                  {/* 1) Full‐width icon */}
+                  <div className="w-full h-32 bg-zinc-900 flex items-center justify-center overflow-hidden">
+                    {tk.baseAsset.icon ? (
+                      <img
+                        src={tk.baseAsset.icon}
+                        alt={tk.baseAsset.name}
+                        className="w-full h-full object-contain p-2"
+                      />
+                    ) : (
+                      <div className="text-white">No Icon</div>
+                    )}
+                  </div>
+
+                  {/* 2) Two rows under image */}
+                  <div className="p-4 space-y-2">
+                    {/* Row 1: Token Name (left) / User holding (right) */}
+                    <div className="flex justify-between items-center">
+                      <h3 className={`text-base font-medium ${geologica.className}`}>
+                        {tk.baseAsset.name}
+                      </h3>
+                      <p className={`text-base font-semibold ${geologica.className}`}>
+                        ${holdingAmount.toFixed(4)}
+                      </p>
+                    </div>
+
+                    {/* Row 2: Market Cap (left) / 24h % change (right) */}
+                    <div className="flex justify-between items-center">
+                      <p className={`text-sm text-gray-500 ${geologica.className}`}>
+                        MCAP ${formatNumber(mcap)}
+                      </p>
+                      <p
+                        className={`text-sm font-medium ${
+                          pctChange >= 0 ? "text-green-600" : "text-red-600"
+                        } ${geologica.className}`}
+                      >
+                        {pctChange.toFixed(2)}%
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-row gap-[12px] justify-between">
-                  <h1
-                    className={`${geologica.className} font-normal text-[10px] opacity-50 transition-all duration-500`}
-                  >
-                    {formatNumber(dynamicPrices[token.id] || token.baseAsset?.usdPrice)} SOL
-                  </h1>
-                  <h1
-                    className={`${
-                      geologica.className
-                    } font-normal text-[10px] ${
-                      (dynamicChanges[token.id] || token.baseAsset?.stats24h?.priceChange) >= 0
-                        ? "text-green-500"
-                        : "text-[#FF0004]"
-                    } transition-all duration-500`}
-                  >
-                    {(dynamicChanges[token.id] || token.baseAsset?.stats24h?.priceChange)?.toFixed(2)}%
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))}
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
-};
-
-export default HotRecent;
+}

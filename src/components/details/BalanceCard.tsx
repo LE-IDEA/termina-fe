@@ -1,164 +1,220 @@
-"use client";
-import Image from "next/image";
-import { Geologica, Instrument_Serif } from "next/font/google";
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import CurrencyChange from "./CurrencyChange";
-import { useAppKitAccount } from "@reown/appkit/react";
-import toast from "react-hot-toast";
-import useFungibleTokens from "@/hooks/useFungibleTokes";
+'use client';
 
-const geologica = Geologica({
-  weight: ["300", "400", "500", "600"],
-  subsets: ["latin"],
-});
-const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"] });
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
+import { Geologica, Instrument_Serif } from 'next/font/google';
+import { useAppConnection } from '@/providers/PrivyProvider';
+import useFungibleTokens from '@/hooks/useFungibleTokes';
+import CurrencyChange, { CurrencyItem } from './CurrencyChange';
 
-const BalanceCard = () => {
-  const [isCurr, setIsCurr] = useState(true);
-  const { address } = useAppKitAccount();
-  const { totalPrice, loading } = useFungibleTokens(address || "");
-  
-  // Dynamic price states
+const geologica = Geologica({ weight: ['300', '400', '500', '600'], subsets: ['latin'] });
+const instrumentSerif = Instrument_Serif({ weight: '400', subsets: ['latin'] });
+
+export default function BalanceCard() {
+  const { connected, user, ready } = useAppConnection();
+  const address = user?.wallet?.address ?? '';
+  const { totalPrice, loading } = useFungibleTokens(connected ? address : '');
+
+  // Dynamic price simulation
   const [dynamicPrice, setDynamicPrice] = useState(0);
-  const [priceChange, setPriceChange] = useState(20);
+  const [priceChange, setPriceChange] = useState(0);
   const [priceDirection, setPriceDirection] = useState(1);
-  
-  // Initialize dynamic price when totalPrice loads
+
+  // Currency dropdown state
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyItem>({
+    id: 4,
+    imgURL: '/USDC.png',
+    curName: 'USDC',
+    curCode: 'USDC',
+    symbol: '$',
+    conversionRate: 1,
+  });
+
+  // ref to the dropdown container
+  const menuAnchor = useRef<HTMLDivElement>(null);
+
+  // Initialize dynamicPrice once totalPrice is available
   useEffect(() => {
-    if (totalPrice && !loading) {
+    if (totalPrice !== undefined && !loading) {
       setDynamicPrice(totalPrice);
     }
   }, [totalPrice, loading]);
-  
-  // Simulate price fluctuations
+
+  // Simulate small fluctuations every 3 seconds
   useEffect(() => {
-    if (!dynamicPrice || loading) return;
-
-    const interval = setInterval(() => {
-      // Random percentage change between -0.15% and +0.15%
-      const randomChange = (Math.random() - 0.45) * 0.003; // Slight positive bias
-      
-      // Switch direction occasionally
-      if (Math.random() > 0.75) {
-        setPriceDirection(prev => prev * -1);
+    if (loading || dynamicPrice === 0) return;
+    const iv = setInterval(() => {
+      const delta = (Math.random() - 0.5) * 0.003; // ±0.15%
+      if (Math.random() > 0.7) {
+        setPriceDirection(d => -d);
       }
-
-      // Calculate new price with slight bias based on direction
-      const newPrice = dynamicPrice * (1 + (randomChange * priceDirection));
-      setDynamicPrice(newPrice);
-      
-      // Update price change percentage
-      setPriceChange(prev => {
-        const newChange = prev + randomChange * 100 * priceDirection;
-        // Limit to a reasonable range
-        return Math.max(15, Math.min(25, newChange)); // Keep between 15-25%
+      setDynamicPrice(p => p * (1 + delta * priceDirection));
+      setPriceChange(c => {
+        let next = c + delta * 100 * priceDirection;
+        if (next > 100) next = 100;
+        if (next < -100) next = -100;
+        return next;
       });
-    }, 3000); // Update every 3 seconds
-
-    return () => clearInterval(interval);
+    }, 3000);
+    return () => clearInterval(iv);
   }, [dynamicPrice, loading, priceDirection]);
-  
-  const changeCurr = () => {
-    setIsCurr(!isCurr);
-  };
 
-  const copyToClipBoard = async () => {
+  // Close dropdown on outside click or Escape
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (menuOpen && menuAnchor.current && !menuAnchor.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    function onEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside);
+      document.removeEventListener('keydown', onEsc);
+    };
+  }, [menuOpen]);
+
+  // Copy address helper
+  const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(`${address}`);
-
-      setTimeout(() => {
-        toast.success("Address copied successfully!");
-      }, 1000);
-
-      return true;
-    } catch (err) {
-      toast.error("Failed to copy balance to clipboard:", err);
-      console.error("Failed to copy balance to clipboard:", err);
-      return false;
+      await navigator.clipboard.writeText(address);
+      toast.success('Address copied!');
+    } catch {
+      toast.error('Failed to copy address.');
     }
   };
-  
+
+  // Avoid rendering until Privy is ready
+  if (!ready) return null;
+
   return (
-    <div className="flex flex-col gap-[12px] md:w-full md:justify-between pmd:h-[238px] ">
-      <div className="flex flex-col bg-[#ebebeb] p-3 md:p-6 gap-[36px] sm:gap-16 pmd:gap-0 pmd:justify-between pmd:h-[178px] rounded-[24px]">
-        <div className="gap-[4px] flex flex-col">
-          <div className="flex flex-row justify-between">
-            <h1
-              className={` ${instrumentSerif.className} font-normal text-[36px] md:leading-1 tracking-[0] text-center text-black transition-all duration-500`}
-            >
-              ${loading ? "loading..." : dynamicPrice.toFixed(2)}
-            </h1>
-          <div className="flex flex-row">
-              <button title="change coin">
-                <Image src="/ArrowDown.svg" alt="prev" width={18} height={18} />
-              </button>
-              <Image src="/usdcLogo.svg" alt="prev" width={58} height={48} className=" aspect-square" quality={100} />
-          </div>
-          </div>
-          <div className="flex gap-1">
-            <div className={`w-[8px] h-[8px] ${priceChange >= 0 ? 'bg-[#47B105]' : 'bg-red-600'} rounded-full transition-all duration-300`}></div>
-            <h1
-              className={`${geologica.className} font-normal text-[10px] ${priceChange >= 0 ? 'text-[#47B105]' : 'text-red-600'} leading-[10px] tracking-[0%] transition-all duration-300`}
-            >
-              {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
-            </h1>
-          </div>
-        </div>
-        <div className="flex flex-row justify-between">
-          <h1
-            className={`font-normal text-[14px] leading-1 tracking-[0%] opacity-50`}
-          >
-            {String(address).substring(0, 8)}...
-            {String(address).substring(
-              String(address).length - 9,
-              String(address).length - 1
-            )}
+    <div className="flex flex-col gap-4 w-full relative">
+      {/* Main Card */}
+      <div className="bg-gray-100 p-5 rounded-xl flex flex-col justify-between">
+        <div className="flex justify-between items-start">
+          {/* Display dynamic price × conversionRate */}
+          <h1 className={`${instrumentSerif.className} text-3xl font-medium`}>
+            {loading
+              ? 'Loading…'
+              : `${selectedCurrency.symbol}${(dynamicPrice * selectedCurrency.conversionRate).toFixed(2)}`}
           </h1>
-          <Image
-            src="/Copy.svg"
-            className="cursor-pointer"
-            alt="prev"
-            width={20}
-            height={20}
-            onClick={copyToClipBoard}
+
+          {/* Currency selector */}
+          <div className="relative" ref={menuAnchor}>
+            <button
+              onClick={() => setMenuOpen(o => !o)}
+              aria-haspopup="menu"
+              className="p-1"
+              title="Change currency"
+            >
+              <Image src="/ArrowDown.svg" alt="▼" width={18} height={18} />
+            </button>
+            <Image
+              src={selectedCurrency.imgURL}
+              alt={selectedCurrency.curCode}
+              width={36}
+              height={36}
+            />
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 z-50">
+                <CurrencyChange
+                  currencies={[
+                    {
+                      id: 1,
+                      imgURL: '/Nigeria.png',
+                      curName: 'Nigerian Naira',
+                      curCode: 'NGN',
+                      symbol: '₦',
+                      conversionRate: 0.0023,
+                    },
+                    {
+                      id: 2,
+                      imgURL: '/UK.png',
+                      curName: 'British Pound',
+                      curCode: 'GBP',
+                      symbol: '£',
+                      conversionRate: 1.25,
+                    },
+                    {
+                      id: 3,
+                      imgURL: '/Solana.svg',
+                      curName: 'Solana',
+                      curCode: 'SOL',
+                      symbol: '◎',
+                      conversionRate: dynamicPrice, // show price in SOL
+                    },
+                    {
+                      id: 4,
+                      imgURL: '/USDC.png',
+                      curName: 'USDC',
+                      curCode: 'USDC',
+                      symbol: '$',
+                      conversionRate: 1,
+                    },
+                  ]}
+                  selectedCurrency={selectedCurrency}
+                  onCurrencySelect={c => {
+                    setSelectedCurrency(c);
+                    setMenuOpen(false);
+                  }}
+                  onClose={() => setMenuOpen(false)}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Price change indicator */}
+        <div className="flex items-center gap-2 mt-2">
+          <span
+            className={`w-2 h-2 rounded-full ${
+              priceChange >= 0 ? 'bg-green-500' : 'bg-red-500'
+            } transition-colors`}
           />
+          <p
+            className={`${geologica.className} text-xs ${
+              priceChange >= 0 ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {priceChange >= 0 ? '+' : ''}
+            {priceChange.toFixed(2)}%
+          </p>
+        </div>
+
+        {/* Address & Copy */}
+        <div className="flex justify-between items-center mt-4">
+          <p className="text-sm text-gray-600">
+            {address ? `${address.slice(0, 6)}…${address.slice(-6)}` : '—'}
+          </p>
+          <button onClick={copyToClipboard} className="p-1">
+            <Image src="/Copy.svg" alt="Copy" width={20} height={20} />
+          </button>
         </div>
       </div>
 
+      {/* Add / Withdraw buttons */}
       <div className="grid grid-cols-2 gap-3">
-        <Link href="/add" className="w-full">
-          <button
-            title="Add"
-            className="w-full items-center justify-center flex flex-row py-[12px] px-10 sm:px-20 md:px-5 gap-2 md:gap-[10px] bg-[#ebebeb] rounded-xl flex-1 hover:bg-gray-200 transition-all"
-          >
+        <Link href="/add" legacyBehavior>
+          <a className="flex items-center justify-center gap-2 bg-gray-100 py-3 rounded-lg hover:bg-gray-200 transition">
             <Image src="/Add.svg" alt="Add" width={24} height={24} />
-            <h1
-              className={`${geologica.className} my-auto font-normal text-[20px] leading-[20px] tracking-[0%] text-center text-black`}
-            >
-              Add
-            </h1>
-          </button>
+            <span className={`${geologica.className} text-lg`}>Add</span>
+          </a>
         </Link>
-
-        <Link href="/withdraw" className="w-full">
-          <button
-            title="Withdraw"
-            className="w-full items-center justify-center flex flex-row py-[12px] px-8 sm:px-16 md:px-4 gap-2 md:gap-[10px] bg-[#ebebeb] rounded-xl flex-1 hover:bg-gray-200 transition-all"
-          >
+        <Link href="/withdraw" legacyBehavior>
+          <a className="flex items-center justify-center gap-2 bg-gray-100 py-3 rounded-lg hover:bg-gray-200 transition">
             <Image src="/Withdraw.svg" alt="Withdraw" width={24} height={24} />
-            <h1
-              className={`${geologica.className} my-auto font-normal text-[20px] leading-[20px] tracking-[0%] text-center text-black`}
-            >
-              Withdraw
-            </h1>
-          </button>
+            <span className={`${geologica.className} text-lg`}>Withdraw</span>
+          </a>
         </Link>
       </div>
-
-      {!isCurr ? <CurrencyChange /> : null}
     </div>
   );
-};
-
-export default BalanceCard;
+}

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import React from 'react';
 import "./globals.css";
-import { ReownProvider } from "../providers/reownProvider";
+import { PrivyWalletProvider } from "@/providers/PrivyProvider";
 import QueryProvider from "@/providers/queryProvider";
 import { Toaster } from "react-hot-toast";
 import Sidebar from "@/components/SideBar";
@@ -21,7 +21,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`bg-gray-50 antialiased`}>
         <QueryProvider>
-          <ReownProvider>
+        <PrivyWalletProvider>
             <div className="flex flex-col min-h-screen bg-gray-50">
               <Sidebar />
               <main className="flex-1 lg:ml-[220px] md:ml-[80px]">
@@ -31,7 +31,7 @@ export default function RootLayout({
               <Toaster />
               <DownNav/>
             </div>
-          </ReownProvider>
+            </PrivyWalletProvider>
         </QueryProvider>
       </body>
     </html>

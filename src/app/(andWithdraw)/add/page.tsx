@@ -4,8 +4,7 @@ import { Geologica } from "next/font/google";
 import { useEffect, useState } from "react";
 import BlackResponse from "@/components/details/BlackResponse";
 import RedResponse from "@/components/details/RedResponse";
-import { useAppKitProvider } from "@reown/appkit/react";
-import { type Provider } from "@reown/appkit-adapter-solana/react";
+import { useAppConnection } from "@/providers/PrivyProvider";
 import { toast } from "react-hot-toast";
 
 const geologica = Geologica({
@@ -14,9 +13,10 @@ const geologica = Geologica({
 });
 
 const ScalexConverterPage = () => {
-  const { walletProvider } = useAppKitProvider<Provider>("solana");
-  const userAddress = walletProvider?.publicKey?.toString();
+  const { connected, user } = useAppConnection();
+  const userAddress = user?.wallet?.address || "";
   const [address, setAddress] = useState(userAddress);
+
 
   const [isInputActive, setIsInputActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

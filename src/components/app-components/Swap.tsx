@@ -1,315 +1,210 @@
-"use client";
-import { useAppKitProvider } from "@reown/appkit/react";
-import {
-  useAppKitConnection,
-  type Provider,
-} from "@reown/appkit-adapter-solana/react";
-import { VersionedTransaction } from "@solana/web3.js";
-import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardContent } from "../ui/card";
-import { Button } from "../ui/button";
-import { ArrowUpDown } from "lucide-react";
-import { Input } from "../ui/input";
-import useTokens from "@/hooks/useTokens";
-import { debounce } from "@/utils";
-import TokenSearchModal from "./TokenModal";
-import { formatBalance } from "@/utils/formattedbalances";
+'use client';
 
-import toast from "react-hot-toast";
-import { useTokenBalances } from "@/hooks/useTokenBalances";
+import React, { useState, useEffect, useCallback } from 'react';
+import { VersionedTransaction } from '@solana/web3.js';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useAppConnection } from '@/providers/PrivyProvider';
+import { Card, CardContent } from '../ui/card';
+import { Button } from '../ui/button';
+import { ArrowUpDown } from 'lucide-react';
+import { Input } from '../ui/input';
+import SwapSlippage from '@/components/details/SwapSlippage';
+import TokenSearchModal from './TokenModal';
+import useTokens from '@/hooks/useTokens';
+import { debounce } from '@/utils';
+import { useSwap } from '@/hooks/useSwap';
+import { useSolBalance } from '@/hooks/useSolBalance';
+import { formatBalance } from '@/utils/formattedbalances';
 
-interface Token {
-  address?: string;
-  symbol: string;
-  name: string;
-  logoURI?: string;
-  decimals?: number;
-}
+export default function Swap({ initialFromAsset, initialToAsset }) {
+  // 1️⃣ Privy authentication
+  const { connected, login } = useAppConnection();
+  if (!connected) {
+    return (
+      <div className="h-64 flex flex-col items-center justify-center space-y-4">
+        <p className="text-lg">Please sign in to swap</p>
+        <Button onClick={login}>Connect / Sign In</Button>
+      </div>
+    );
+  }
 
-interface QuoteResponse {
-  outAmount: string;
-}
+  // 2️⃣ Solana connection & wallet
+  const { connection } = useConnection();
+  const wallet = useWallet();
 
-interface SwapProps {
-  initialFromAsset?: Token;
-  initialToAsset?: Token;
-}
-
-export default function Swap({ initialFromAsset, initialToAsset }: SwapProps) {
-  const { connection } = useAppKitConnection();
-  const { walletProvider } = useAppKitProvider<Provider>("solana");
+  // 3️⃣ Tokens & balances
   const { tokens } = useTokens();
-  const { balances, balancesLoading } = useTokenBalances();
+  const { balances, balancesLoading } = useSolBalance({
+    connection,
+    publicKey: wallet.publicKey,
+  });
 
-  const [fromAsset, setFromAsset] = useState<Token | null>(initialFromAsset || null);
-  const [toAsset, setToAsset] = useState<Token | null>(initialToAsset || null);
-  const [fromAmount, setFromAmount] = useState("");
-  const [toAmount, setToAmount] = useState("");
-  const [quoteResponse, setQuoteResponse] = useState<QuoteResponse | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [swapping, setSwapping] = useState(false);
+  // 4️⃣ Swap hook
+  const {
+    quoteResponse,
+    estimatedFee,
+    swapping,
+    toAmount,
+    debounceQuoteCall,
+    signAndSendTransaction,
+  } = useSwap({ connection, walletProvider: wallet });
 
+  // 5️⃣ Local state
+  const [fromAsset, setFromAsset] = useState(initialFromAsset || tokens[0]);
+  const [toAsset, setToAsset]     = useState(initialToAsset || tokens[1] || tokens[0]);
+  const [fromAmount, setFromAmount] = useState('');
+
+  // 6️⃣ Initialize defaults once tokens load
   useEffect(() => {
-    if (tokens && tokens.length >= 2 && !isInitialized) {
-      if (!fromAsset) setFromAsset(tokens[0]);
-      if (!toAsset) setToAsset(tokens[1]);
-      setIsInitialized(true);
+    if (tokens.length >= 2) {
+      setFromAsset(initialFromAsset || tokens[0]);
+      setToAsset(initialToAsset || tokens[1]);
     }
-  }, [tokens, isInitialized, fromAsset, toAsset]);
+  }, [tokens, initialFromAsset, initialToAsset]);
 
-  // Update assets if props change
-  useEffect(() => {
-    if (initialFromAsset) {
-      setFromAsset(initialFromAsset);
-    }
-    if (initialToAsset) {
-      setToAsset(initialToAsset);
-    }
-  }, [initialFromAsset, initialToAsset]);
-
-  const handleFromAssetChange = (token: Token) => {
-    if (token) {
-      setFromAsset(token);
-      setFromAmount("");
-      setToAmount("");
-    }
+  // 7️⃣ Handle input & direction
+  const handleFromChange = token => { setFromAsset(token); setFromAmount(''); };
+  const handleToChange   = token => setToAsset(token);
+  const handleAmount     = e => {
+    const v = e.target.value;
+    if (!v || (!isNaN(+v) && +v >= 0)) setFromAmount(v);
   };
-
-  const handleToAssetChange = (token: Token) => {
-    if (token) {
-      setToAsset(token);
-      setFromAmount("");
-      setToAmount("");
-    }
-  };
-
-  const handleFromValueChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = event.target.value;
-    if (value === "" || (!isNaN(Number(value)) && Number(value) >= 0)) {
-      setFromAmount(value);
-    }
-  };
-
-  const debounceQuoteCall = useCallback(debounce(getQuote, 500), [
-    fromAsset,
-    toAsset,
-  ]);
-
-  useEffect(() => {
-    if (fromAmount && Number(fromAmount) > 0) {
-      debounceQuoteCall(Number(fromAmount));
-    } else {
-      setToAmount("");
-    }
-  }, [fromAmount, debounceQuoteCall]);
-
-  async function getQuote(currentAmount: number) {
-    if (!currentAmount || !fromAsset || !toAsset) {
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `https://quote-api.jup.ag/v6/quote?inputMint=${
-          fromAsset.address
-        }&outputMint=${toAsset.address}&amount=${
-          currentAmount * Math.pow(10, fromAsset.decimals || 9)
-        }&slippage=0.5`
-      );
-      const quote = await response.json();
-
-      if (quote && quote.outAmount) {
-        const outAmountNumber =
-          Number(quote.outAmount) / Math.pow(10, toAsset.decimals || 9);
-        setToAmount(outAmountNumber.toString());
-        setQuoteResponse(quote);
-      }
-    } catch (error) {
-      console.error("Error fetching quote:", error);
-      toast.error("Error fetching quote");
-      setToAmount("");
-      setQuoteResponse(null);
-    }
-  }
-
-  const handleSwapDirection = () => {
-    const tempToken = fromAsset;
+  const handleDirection = () => {
     setFromAsset(toAsset);
-    setToAsset(tempToken);
-
-    const tempAmount = fromAmount;
-    setFromAmount(toAmount);
-    setToAmount(tempAmount);
+    setToAsset(fromAsset);
+    setFromAmount(toAmount || '');
   };
 
-  async function signAndSendTransaction() {
-    if (!walletProvider || !connection || !quoteResponse) {
-      console.error("Missing required dependencies for swap");
-      toast.error("Missing required dependencies for swap");
-      return;
-    }
-
+  // 8️⃣ Debounce quoting
+  const getQuote = async amt => {
+    if (!amt || !fromAsset || !toAsset) return;
     try {
-      setSwapping(true);
-      if (swapping) {
-        toast.loading("Swapping...");
+      const res = await fetch(
+        `https://quote-api.jup.ag/v6/quote?inputMint=${fromAsset.address}&outputMint=${toAsset.address}` +
+        `&amount=${Math.floor(amt * 10**(fromAsset.decimals||9))}&slippage=0.5`
+      );
+      const js = await res.json();
+      if (js?.outAmount) {
+        setFromAmount(amt.toString());
       }
-      const { swapTransaction } = await fetch(
-        "https://quote-api.jup.ag/v6/swap",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            quoteResponse,
-            userPublicKey: walletProvider.publicKey?.toString(),
-            wrapAndUnwrapSol: true,
-          }),
-        }
-      ).then((res) => res.json());
+    } catch {}
+  };
+  const debounced = useCallback(debounce(getQuote, 500), [fromAsset, toAsset]);
+  useEffect(() => {
+    if (fromAmount && +fromAmount > 0) debounced(+fromAmount);
+  }, [fromAmount, debounced]);
 
-      const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
-      const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
-      const signedTransaction = await walletProvider.signTransaction(
-        transaction
-      );
+  // 9️⃣ Fee/Total helpers
+  const formatFee = f => f ? `~$${(f * 20).toFixed(2)}` : '—';
+  const totalWithFee = () =>
+    fromAmount && estimatedFee
+      ? `${(Number(fromAmount) + estimatedFee).toFixed(4)} ${fromAsset.symbol}`
+      : '—';
+  const rate =
+    quoteResponse && fromAmount
+      ? (Number(toAmount) / Number(fromAmount)).toFixed(6)
+      : null;
 
-      const rawTransaction = signedTransaction.serialize();
-      const txid = await connection.sendRawTransaction(rawTransaction, {
-        skipPreflight: true,
-        maxRetries: 2,
-      });
-
-      const latestBlockHash = await connection.getLatestBlockhash();
-      await connection.confirmTransaction(
-        {
-          blockhash: latestBlockHash.blockhash,
-          lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-          signature: txid,
-        },
-        "confirmed"
-      );
-      setSwapping(false);
-      console.log(`https://solscan.io/tx/${txid}`);
-      toast.success(
-        `Swap transaction successful: https://solscan.io/tx/${txid} `
-      );
-    } catch (error) {
-      console.error("Error in swap transaction:", error);
-      toast.error("Error in swap transaction");
-      setSwapping(false);
-    }
-  }
-
-  const isSwapDisabled =
+  // ⓫ Disable logic
+  const swapDisabled =
     !fromAmount ||
     !toAmount ||
     Number(fromAmount) <= 0 ||
-    (fromAsset && toAsset && toAsset.address === fromAsset.address) ||
+    toAsset.address === fromAsset.address ||
     swapping;
 
   return (
     <Card className="w-full bg-zinc-900 rounded-3xl">
-      <CardContent className="p-3">
-        <div className="rounded-2xl bg-zinc-800 p-4 py-6 h-32 mb-2">
-          <div className="flex justify-between mb-2">
-            <label className="text-sm text-gray-500">You pay</label>
-            <span className="text-sm text-gray-500">
+      <CardContent className="p-4 space-y-4">
+        {/* You Pay */}
+        <div className="bg-zinc-800 rounded-2xl p-4">
+          <div className="flex justify-between text-gray-400 mb-2">
+            <span>You pay</span>
+            <span>
               {formatBalance({
                 token: fromAsset,
-                balance: fromAsset && fromAsset.address ? balances[fromAsset.address] : undefined,
+                balance: balances[fromAsset.address],
                 isLoading: balancesLoading,
-                isWalletConnected: !!walletProvider?.publicKey,
-              })}{" "}
+                isWalletConnected: !!wallet.publicKey,
+              })}
             </span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Input
-              type="text"
               placeholder="0.0"
               value={fromAmount}
-              onChange={handleFromValueChange}
-              className="border-0 bg-transparent text-2xl text-white focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+              onChange={handleAmount}
+              className="bg-transparent text-white text-2xl flex-1"
             />
             <TokenSearchModal
-              onSelect={handleFromAssetChange}
-              defaultToken={fromAsset || undefined}
+              onSelect={handleFromChange}
+              defaultToken={fromAsset}
             />
           </div>
         </div>
 
-        <div className="relative h-0">
-          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-            <Button
-              variant="secondary"
-              size="icon"
-              className="rounded-full shadow-md"
-              onClick={handleSwapDirection}
-            >
-              <ArrowUpDown className="h-4 w-4" />
-            </Button>
-          </div>
+        {/* Switch */}
+        <div className="flex justify-center">
+          <Button
+            variant="secondary"
+            size="icon"
+            className="rounded-full"
+            onClick={handleDirection}
+          >
+            <ArrowUpDown />
+          </Button>
         </div>
 
-        <div className="rounded-2xl bg-zinc-800 p-4 py-6 h-32 mt-2">
-          <div className="flex justify-between mb-2">
-            <label className="text-base text-gray-500">You receive</label>
-            <span className="text-base text-gray-500">
+        {/* You Receive */}
+        <div className="bg-zinc-800 rounded-2xl p-4">
+          <div className="flex justify-between text-gray-400 mb-2">
+            <span>You receive</span>
+            <span>
               {formatBalance({
                 token: toAsset,
-                balance: toAsset && toAsset.address ? balances[toAsset.address] : undefined,
+                balance: balances[toAsset.address],
                 isLoading: balancesLoading,
-                isWalletConnected: !!walletProvider?.publicKey,
-              })}{" "}
+                isWalletConnected: !!wallet.publicKey,
+              })}
             </span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Input
-              type="number"
               placeholder="0.0"
-              value={toAmount}
+              value={toAmount || ''}
               readOnly
-              className="border-0 bg-transparent text-white text-2xl focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+              className="bg-transparent text-white text-2xl flex-1"
             />
             <TokenSearchModal
-              onSelect={handleToAssetChange}
-              defaultToken={toAsset || undefined}
+              onSelect={handleToChange}
+              defaultToken={toAsset}
             />
           </div>
         </div>
 
-        <div className="mt-6 space-y-2 text-sm">
-          <div className="flex justify-between text-gray-500">
-            <span>Price Impact</span>
-            <span className="text-green-600">{"<0.01%"}</span>
+        {/* Slippage */}
+        <SwapSlippage />
+
+        {/* Fee & Rate Display */}
+        <div className="border-t border-zinc-700 pt-4 space-y-2 text-sm text-gray-400">
+          <div className="flex justify-between">
+            <span>Network Fee</span><span>{formatFee(estimatedFee)}</span>
           </div>
-          <div className="flex justify-between text-gray-500">
-            <span>Network Fee</span>
-            <span>~$1.50</span>
-          </div>
-          <br className="my-4" />
-          {fromAmount && toAmount && Number(fromAmount) > 0 && fromAsset && toAsset && (
-            <div className="flex justify-between font-medium">
+          {rate && (
+            <div className="flex justify-between">
               <span>Rate</span>
-              <span>
-                1 {fromAsset.name} ={" "}
-                {(Number(toAmount) / Number(fromAmount)).toFixed(6)}{" "}
-                {toAsset.name}
-              </span>
+              <span>1 {fromAsset.symbol} = {rate} {toAsset.symbol}</span>
             </div>
           )}
         </div>
 
+        {/* Swap Button */}
         <Button
-          className="w-full bg-blue-700 mt-4 px-6 py-6 text-white text-lg hover:text-gray-800 hover:text-white rounded-full"
-          size="lg"
+          className="w-full bg-blue-700 py-3 text-lg text-white rounded-full"
           onClick={signAndSendTransaction}
-          disabled={isSwapDisabled}
+          disabled={swapDisabled}
         >
-          Swap
+          {swapping ? 'Swapping…' : 'Swap'}
         </Button>
       </CardContent>
     </Card>
